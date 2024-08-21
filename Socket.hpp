@@ -1,28 +1,36 @@
 #ifndef SOCKET_HPP
-# define SOCKET_HPP
+#define SOCKET_HPP
 
-# include <iostream>
-# include <string>
 #include <netinet/in.h>
+#include <poll.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-class Socket
-{
-public:
-	Socket(int port);
-	~Socket();
-	void bind();
-	void listen(int n);
-	int accept();
-	int getSockFd();
-	// int read(int client_sock, char* buffer, size_t size);
+#include <iostream>
+#include <iterator>
+#include <string>
+#include <vector>
+class Server {
+ public:
+  Server(int port);
+  ~Server();
+  void bind();
+  void listen(int n);
+  int accept();
+  int getSockFd();
+  void monitor_clients();
+  void add_fd_ToPoll(int client_fd);
+  void del_fd_FromPoll(int client_fd);
+  void broadcast(int sender_fd, char *msg, int nbytes);
+  // int read(int client_sock, char* buffer, size_t size);
 
-private:
-	int _sock_fd;
-	struct sockaddr_in _serv_addr;
+ private:
+  int _sock_fd;
+  struct sockaddr_in _serv_addr;
+  std::vector<struct pollfd> _pfds;
+  int _fd_count;
 };
 
-
-#endif /* ********************************************************** SOCKET_H */
+#endif /* ********************************************************** SOCKET_H \
+        */
