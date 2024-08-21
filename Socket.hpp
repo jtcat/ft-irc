@@ -21,7 +21,7 @@ class Server {
   int getSockFd();
   void monitor_clients();
   void add_fd_ToPoll(int client_fd);
-  void del_fd_FromPoll(int client_fd);
+  void del_fd_FromPoll(int i);
   void broadcast(int sender_fd, char *msg, int nbytes);
   // int read(int client_sock, char* buffer, size_t size);
 

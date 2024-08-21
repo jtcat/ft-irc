@@ -48,33 +48,35 @@ int Server::accept() {
   return newsock_fd;
 }
 void Server::add_fd_ToPoll(int client_fd) {
-	std::cout << "Add to Poll fd = "<<client_fd << std::endl;
+	// std::cout << "Add to Poll fd = "<<client_fd << std::endl;
 	struct pollfd temp_pfds;
 
 	temp_pfds.fd = client_fd;
 	temp_pfds.events = POLLIN;
+	temp_pfds.revents = 0;
 	_pfds.push_back(temp_pfds);
 	_fd_count++;
 }
-void Server::del_fd_FromPoll(int client_fd) {
-	std::cout << "Deleting from Poll"<< std::endl;
-	_pfds.erase(_pfds.begin() + client_fd);
+void Server::del_fd_FromPoll(int i) {
+	// std::cout << "Deleting from Poll"<< std::endl;
+	close(_pfds[i].fd);
+	_pfds.erase(_pfds.begin() + i);
 	_fd_count--;
-	close(it->fd);
 };
+
 void Server::broadcast(int sender_fd, char *msg, int nbytes)
 {
-	std::cout << "starting broadcast" << std::endl;
-	for(std::vector<struct pollfd>::iterator it = _pfds.begin(); it != _pfds.end(); it++)
+	// std::cout << "starting broadcast" << std::endl;
+	for(size_t i = 0 ; i < _pfds.size(); i++)
 	{
-		int dest = it->fd;
+		int dest = _pfds[i].fd;
 		if (dest != _sock_fd && dest != sender_fd) {
 			if (send(dest, msg, nbytes, 0) == -1) {
 				perror("send");
 			}
 		}
 	}
-		std::cout << "ended broadcast" << std::endl;
+		// std::cout << "ended broadcast" << std::endl;
 
 }
 
@@ -89,8 +91,8 @@ void Server::monitor_clients() {
 			perror("poll");
 			exit(1);
 		}
-		for (int i = 0 ; i < _pfds.size(); i++) {
-			if (_pfds[i].revents& POLLIN) {  // We got one!!
+		for (size_t i = 0 ; i < _pfds.size(); i++) {
+			if (_pfds[i].revents & POLLIN) {  // We got one!!
 				if (_pfds[i].fd == _sock_fd) { //any attempt to connect?
 				//CHECK CONNECTION LIMIT
 					client_fd = this->accept();
@@ -98,10 +100,10 @@ void Server::monitor_clients() {
 					std::cout << "NEW CONNECTION" << std::endl;
 				}
 				else { //regular client;
-					std::cout << "Pool size = "<< _pfds.size() << std::endl;
-					std::cout << "Got a regular client fd = " << _pfds[i].fd <<std::endl;
+					// std::cout << "Pool size = "<< _pfds.size() << std::endl;
+					// std::cout << "Got a regular client fd = " << _pfds[i].fd <<std::endl;
 					bzero(buff, 4000);
-					std::cout << "sizeof buff = " << sizeof(buff)/sizeof(char) << std::endl;
+					// std::cout << "sizeof buff = " << sizeof(buff)/sizeof(char) << std::endl;
 					int bytes_read = recv(_pfds[i].fd, buff, sizeof(buff), 0);
 					if (bytes_read <= 0) {
 						// Got error or connection closed by client
@@ -109,10 +111,11 @@ void Server::monitor_clients() {
 							std::cerr << "pollserver: socket hung up" << std::endl;
 						else
 							perror("recv");
-						del_fd_FromPoll(_pfds[i]);
+						del_fd_FromPoll(i);
+					// --i;
 					} else {
 						std::cout << "MESSAGE: " << buff << std::endl;
-						broadcast(it->fd, buff, bytes_read);
+						broadcast(_pfds[i].fd, buff, bytes_read);
 					}
 				}
 			}
