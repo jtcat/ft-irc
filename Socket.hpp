@@ -14,13 +14,14 @@ public:
 	Socket(int port);
 	~Socket();
 	void bind();
-	void listen();
+	void listen(int n);
 	int accept();
-	int read(int client_sock, char* buffer, size_t size);
+	int getSockFd();
+	// int read(int client_sock, char* buffer, size_t size);
 
 private:
-	int sock_fd;
-	struct sockaddr_in serv_addr;
+	int _sock_fd;
+	struct sockaddr_in _serv_addr;
 };
 
 
