@@ -1,4 +1,4 @@
-#include "Socket.hpp"
+#include "Server.hpp"
 
 #include <cstdio>
 #include <cstdlib>
@@ -58,7 +58,6 @@ void Server::add_fd_ToPoll(int client_fd) {
 	_fd_count++;
 }
 void Server::del_fd_FromPoll(int i) {
-	// std::cout << "Deleting from Poll"<< std::endl;
 	close(_pfds[i].fd);
 	_pfds.erase(_pfds.begin() + i);
 	_fd_count--;
@@ -66,7 +65,6 @@ void Server::del_fd_FromPoll(int i) {
 
 void Server::broadcast(int sender_fd, char *msg, int nbytes)
 {
-	// std::cout << "starting broadcast" << std::endl;
 	for(size_t i = 0 ; i < _pfds.size(); i++)
 	{
 		int dest = _pfds[i].fd;
@@ -76,13 +74,11 @@ void Server::broadcast(int sender_fd, char *msg, int nbytes)
 			}
 		}
 	}
-		// std::cout << "ended broadcast" << std::endl;
-
 }
 
 void Server::monitor_clients() {
 	int client_fd;
-	char buff[4000];
+	char buff[512];
 
 	this->add_fd_ToPoll(_sock_fd);
 	while (true) {
@@ -97,12 +93,10 @@ void Server::monitor_clients() {
 				//CHECK CONNECTION LIMIT
 					client_fd = this->accept();
 					this->add_fd_ToPoll(client_fd);
-					std::cout << "NEW CONNECTION" << std::endl;
+					// std::cout << "NEW CONNECTION" << std::endl;
 				}
-				else { //regular client;
-					// std::cout << "Pool size = "<< _pfds.size() << std::endl;
-					// std::cout << "Got a regular client fd = " << _pfds[i].fd <<std::endl;
-					bzero(buff, 4000);
+				else {
+					bzero(buff, 512);
 					// std::cout << "sizeof buff = " << sizeof(buff)/sizeof(char) << std::endl;
 					int bytes_read = recv(_pfds[i].fd, buff, sizeof(buff), 0);
 					if (bytes_read <= 0) {
@@ -112,10 +106,9 @@ void Server::monitor_clients() {
 						else
 							perror("recv");
 						del_fd_FromPoll(i);
-					// --i;
 					} else {
-						std::cout << "MESSAGE: " << buff << std::endl;
-						broadcast(_pfds[i].fd, buff, bytes_read);
+						std::cout << buff;
+						// broadcast(_pfds[i].fd, buff, bytes_read);
 					}
 				}
 			}

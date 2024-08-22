@@ -10,7 +10,7 @@
 #include <sstream>
 #include <string>
 
-#include "Socket.hpp"
+#include "Server.hpp"
 
 int main(int argc, char **argv) {
 
