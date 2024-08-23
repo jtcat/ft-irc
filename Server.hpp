@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 #include <set>
+
 class Channel;
 class Client;
 class Server {
