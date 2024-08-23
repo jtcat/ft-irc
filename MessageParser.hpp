@@ -2,10 +2,14 @@
 
 #include <string>
 
-class	MessageParser {
-	public:
-		MessageParser(void);
-		~MessageParser(void);
+class MessageParser
+{
+public:
+	MessageParser(void);
+	~MessageParser(void);
 
-		bool	parseMessage(const std::string::iterator& msg);
+	bool parseMessage(std::stringstream &msg);
+	bool parseBuffer(const std::string &msg);
+	bool parseParamms(std::stringstream &msg);
+	bool parseCommand(std::stringstream &msg);
 };
