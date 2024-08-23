@@ -8,23 +8,24 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
-#include <string>
 
 #include "Server.hpp"
 
 int main(int argc, char **argv) {
-
   int portno;
-  std::stringstream ss(argv[1]);
-  ss >> portno;
+
   if (argc != 3) {
-    std::cerr << "Invalid Numbe of args" << std::endl;
+    std::cerr << "Invalid number of arguments" << std::endl;
     return 1;
   }
+
+  std::stringstream ss(argv[1]);
+  ss >> portno;
+
   Server server(portno);
 
   server.bind();
   server.listen(5);
-  server.monitor_clients();
+  server.monitorClients();
   return 0;
 }

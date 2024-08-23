@@ -1,20 +1,20 @@
-#ifndef CHANNEL_HPP
-# define CHANNEL_HPP
+#pragma once
 
-# include <iostream>
-# include <string>
-# include <set>
+#include <iostream>
+#include <string>
+#include <set>
+
 class Client;
+#include "Client.hpp"
 
 class Channel
 {
 	public:
+		Channel(void);
+		Channel(Channel const & src );
+		~Channel(void);
 
-		Channel();
-		Channel( Channel const & src );
-		~Channel();
-
-		Channel &		operator=( Channel const & rhs );
+		Channel&	operator=(Channel const & rhs );
 
 	private:
 		std::set<std::string, Client *> _users;
@@ -22,5 +22,3 @@ class Channel
 };
 
 std::ostream &			operator<<( std::ostream & o, Channel const & i );
-
-#endif /* ********************************************************** Channel_H */
