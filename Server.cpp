@@ -6,6 +6,7 @@
 
 Server::Server(int port) : _pfds(), _fd_count(0) {
   _sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+
   if (_sock_fd < 0) {
 	perror("ERROR opening socket");
 	exit(1);
@@ -23,31 +24,37 @@ Server::Server(int port) : _pfds(), _fd_count(0) {
   }
 }
 
-Server::~Server() { close(_sock_fd); }
+Server::~Server() {
+	close(_sock_fd);
+}
 
 void Server::bind() {
 	if (::bind(_sock_fd, reinterpret_cast<struct sockaddr *>(&_serv_addr),
-			 sizeof(_serv_addr)) < 0) {
-	perror("ERROR on binding");
-	exit(1);
-  }
+				sizeof(_serv_addr)) < 0)
+	{
+		perror("ERROR on binding");
+		exit(1);
+	}
 }
 
 int Server::accept() {
-  unsigned int addr_size;
-  int newsock_fd;
-  struct sockaddr_in client_addr;
+	unsigned int addr_size;
+	int newsock_fd;
+	struct sockaddr_in client_addr;
 
-  addr_size = sizeof(client_addr);
-  newsock_fd = ::accept(
-	  _sock_fd, reinterpret_cast<struct sockaddr *>(&client_addr), &addr_size);
-  if (newsock_fd < 0) {
-	perror("ERROR on accept");
-	exit(1);
-  }
-  return newsock_fd;
+	addr_size = sizeof(client_addr);
+	newsock_fd = ::accept(
+			_sock_fd, reinterpret_cast<struct sockaddr *>(&client_addr), &addr_size);
+
+	if (newsock_fd < 0) {
+		perror("ERROR on accept");
+		exit(1);
+	}
+
+	return newsock_fd;
 }
-void Server::add_fd_ToPoll(int client_fd) {
+
+void Server::addPollFd(int client_fd) {
 	// std::cout << "Add to Poll fd = "<<client_fd << std::endl;
 	struct pollfd temp_pfds;
 
@@ -57,7 +64,8 @@ void Server::add_fd_ToPoll(int client_fd) {
 	_pfds.push_back(temp_pfds);
 	_fd_count++;
 }
-void Server::del_fd_FromPoll(int i) {
+
+void Server::delPollFd(int i) {
 	close(_pfds[i].fd);
 	_pfds.erase(_pfds.begin() + i);
 	_fd_count--;
@@ -76,11 +84,17 @@ void Server::broadcast(int sender_fd, char *msg, int nbytes)
 	}
 }
 
-void Server::monitor_clients() {
+void	Server::procMsg(const std::string& buf) {
+	static	MessageParser	parser;
+
+	parser.parseMessage(buf.begin());
+}
+
+void Server::monitorClients() {
 	int client_fd;
 	char buff[512];
 
-	this->add_fd_ToPoll(_sock_fd);
+	this->addPollFd(_sock_fd);
 	while (true) {
 		int poll_count = poll(&_pfds[0], _fd_count, -1);
 		if (poll_count == -1) {
@@ -90,9 +104,9 @@ void Server::monitor_clients() {
 		for (size_t i = 0 ; i < _pfds.size(); i++) {
 			if (_pfds[i].revents & POLLIN) {  // We got one!!
 				if (_pfds[i].fd == _sock_fd) { //any attempt to connect?
-				//CHECK CONNECTION LIMIT
+											   //CHECK CONNECTION LIMIT
 					client_fd = this->accept();
-					this->add_fd_ToPoll(client_fd);
+					this->addPollFd(client_fd);
 					// std::cout << "NEW CONNECTION" << std::endl;
 				}
 				else {
@@ -105,8 +119,10 @@ void Server::monitor_clients() {
 							std::cerr << "pollserver: socket hung up" << std::endl;
 						else
 							perror("recv");
-						del_fd_FromPoll(i);
-					} else {
+						delPollFd(i);
+					}
+					else {
+						procMsg(buff);
 						std::cout << buff;
 						// broadcast(_pfds[i].fd, buff, bytes_read);
 					}
@@ -116,5 +132,10 @@ void Server::monitor_clients() {
 	}
 }
 
-  void Server::listen(int n) { ::listen(_sock_fd, n); }
-  int Server::getSockFd() { return _sock_fd; }
+void Server::listen(int n) {
+	::listen(_sock_fd, n);
+}
+
+int	Server::getSockFd() {
+	return _sock_fd;
+}
