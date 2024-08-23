@@ -19,6 +19,7 @@ bool	MessageParser::parseCommand(const std::string::iterator& msg)  {
 }
 
 bool	MessageParser::parseMessage(const std::string::iterator& cursor) {
+	while ()
 	parseCommand(cursor);
 	parseParameters(cursor);
 	parseMessageEnd(cursor);
