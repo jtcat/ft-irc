@@ -146,6 +146,8 @@ void Server::monitorClients()
 						// std::cout << "ola" << std::endl;
 						// broadcast(_pfds[i].fd, buff, bytes_read);
 					}
+					//test with hexchat
+					//make a flag so that whitespaces after : are not skipped
 				}
 			}
 		}
