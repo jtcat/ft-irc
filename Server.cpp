@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-
+#include "MessageParser.hpp"
 Server::Server(int port) : _pfds(), _fd_count(0)
 {
 	_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -142,8 +142,9 @@ void Server::monitorClients()
 					}
 					else
 					{
-						// procMsg(buff);
 						std::cout << buff;
+						MessageParser::parseBuffer(buff);
+						std::cout << "Got back from parsing" << std::endl;
 						// std::cout << "ola" << std::endl;
 						// broadcast(_pfds[i].fd, buff, bytes_read);
 					}
