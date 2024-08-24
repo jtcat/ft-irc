@@ -142,9 +142,7 @@ void Server::monitorClients()
 					}
 					else
 					{
-						std::cout << buff;
 						MessageParser::parseBuffer(buff);
-						std::cout << "Got back from parsing" << std::endl;
 						// std::cout << "ola" << std::endl;
 						// broadcast(_pfds[i].fd, buff, bytes_read);
 					}
