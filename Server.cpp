@@ -109,7 +109,6 @@ void Server::broadcast(int sender_fd, char *msg, int nbytes)
 	}
 }
 
-
 void Server::monitorClients()
 {
 	char buff[512];
@@ -152,7 +151,7 @@ void Server::monitorClients()
 					}
 					else
 					{
-						MessageParser::parseBuffer(buff);
+						MessageParser::parseBuffer(buff, _clients[_pfds[i].fd]);
 						// broadcast(_pfds[i].fd, buff, bytes_read);
 					}
 				}

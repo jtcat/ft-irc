@@ -3,10 +3,26 @@
 #include <vector>
 #include <iostream>
 
+// static void Pass_exec(std::vector<std::string> &msg_tokens) {
 
+// };
+// static void User_exec(std::vector<std::string> &msg_tokens) {
+
+// };
+// static void Nick_exec(std::vector<std::string> &msg_tokens) {
+
+// };
 // void MessageParser::execute_command(std::vector<std::string> &msg_tokens) {
 
-// 	// if ()
+// 	if (msg_tokens[0] == "PASS")
+// 		//exec pass
+// 	else if (msg_tokens[0] == "USER")
+// 		//exec user
+// 	else if (msg_tokens[0] == "NICK")
+// 		//exec nick
+// 	else
+// 		std::cout
+// 		std::cout << ":ft_irc 451 * :Connection not registered" << std::endl;
 // }
 
 void printVectorWithSpaces(const std::vector<std::string>& vec) {
@@ -44,7 +60,7 @@ bool	MessageParser::parseParams(std::stringstream& msg, std::vector<std::string>
 		//should I store : together with the rest of the arguments?
 		if (ch == ':' && ss.str().empty()) // " : " is found
 			include_space = 1;
-		if (!isspace(ch) || include_space == 1) {
+		else if (!isspace(ch) || include_space == 1) {
 			ss << ch; // append the character into the string
 		} else {
 			if (ss.str().length() > 0) {
@@ -79,26 +95,31 @@ bool	MessageParser::parseCommand(std::stringstream& msg, std::vector<std::string
 	return false;
 }
 
-void	MessageParser::parseBuffer(const std::string& buff) {
+void	MessageParser::parseBuffer(const std::string& buff, Client *client)  {
 	std::stringstream ss_buff(buff);
+	(void)client;
 	while (!ss_buff.eof())
 	{
-		parseMessage(ss_buff);
+		parseMessage(ss_buff, client);
 	}
-
 }
-bool	MessageParser::parseMessage(std::stringstream& msg) {
+bool	MessageParser::parseMessage(std::stringstream& msg, Client *client) {
 	std::vector<std::string> msg_tokens;
+	(void)client;
 	if (!parseCommand(msg, msg_tokens) || !parseParams(msg, msg_tokens))
 	{
 		removeUntilCRLF(msg);
 		//print ERR_UNKNOWNERROR (400) -> can specify specific messages
 		return false;
 	}
+
 	//execute command;
 	printVectorWithSpaces(msg_tokens);
-	std::cout <<"message size = "<<msg_tokens.size() << std::endl;
+	std::cout << "message size = " <<msg_tokens.size() << std::endl;
 	return true;
 }
-//check for nic:k
 
+//check for nic:k
+//PASS must be the first command or -> ERR_NOTREGISTERED (451)
+//THEN NICK and USER or vice-versa
+//THEN WELCOME MESSAGE

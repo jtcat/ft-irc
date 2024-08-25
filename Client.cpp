@@ -16,7 +16,7 @@ Client::Client( const Client & src )
 	*this = src;
 }
 
-Client::Client(int sock_fd, std::string ip_addr) : _sock_fd(sock_fd) , _ip_addr(ip_addr){}
+Client::Client(int sock_fd, std::string ip_addr) : _sock_fd(sock_fd) , _ip_addr(ip_addr), _authenticated(0), _registered(0){}
 
 /*
 ** -------------------------------- DESTRUCTOR --------------------------------

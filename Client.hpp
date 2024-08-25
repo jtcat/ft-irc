@@ -10,7 +10,6 @@ class Channel;
 class Client
 {
 public:
-	Client(void);
 	Client(int sock_fd, std::string ip_addr);
 	Client(Client const &src);
 	~Client(void);
@@ -23,10 +22,12 @@ public:
 	Client &operator=(Client const &rhs);
 
 private:
+	Client(void);
 	int _sock_fd;
 	std::string _ip_addr;
 	std::string _nick;
 	std::string _username;
 	int _authenticated;
+	int _registered;
 	std::map<std::string, Channel *> _channels;
 };
