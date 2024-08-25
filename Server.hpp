@@ -7,8 +7,8 @@
 #include <unistd.h>
 #include <string>
 #include <vector>
+#include <map>
 #include <set>
-
 
 #include "Channel.hpp"
 #include "Client.hpp"
@@ -20,12 +20,13 @@ class Server {
 
 		void	bind(void);
 		void	listen(int n);
-		int		accept(void);
+		const Client	accept(void);
 		int		getSockFd(void);
 		void	monitorClients(void);
 		void	addPollFd(int client_fd);
 		void	delPollFd(int i);
 		void	broadcast(int sender_fd, char *msg, int nbytes);
+		void	registerNewClient();
 		//	int read(int client_sock, char* buffer, size_t size);
 
 	private:
@@ -33,6 +34,6 @@ class Server {
 		struct sockaddr_in 					_serv_addr;
 		std::vector<struct pollfd> 			_pfds;
 		int 								_fd_count;
-		std::set<std::string , Channel *> 	_channels;
-		std::set<std::string, Client *> 	_clients;
+		std::map<std::string , Channel *> 	_channels;
+		std::map<int ,Client *> 	_clients;
 };

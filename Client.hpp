@@ -2,25 +2,31 @@
 
 #include <iostream>
 #include <string>
-#include <set>
+#include <map>
 
 class Channel;
 #include "Channel.hpp"
 
-class Client {
-	public:
-		Client(void);
-		Client(Client const & src );
-		~Client(void);
+class Client
+{
+public:
+	Client(void);
+	Client(int sock_fd, std::string ip_addr);
+	Client(Client const &src);
+	~Client(void);
+	int getSockFd() const;
+	const std::string &getIpAddr() const;
+	const std::string &getNick() const;
+	const std::string &getUsername() const;
+	int getAuthenticated() const;
+	const std::map<std::string, Channel *> &getChannels() const;
+	Client &operator=(Client const &rhs);
 
-		Client &		operator=( Client const & rhs );
-
-	private:
-		int								_sock_fd;
-		std::string 					_nick;
-		std::string 					_username;
-		int								_autheticated;
-		std::set<std::string, Channel *> _channels;
+private:
+	int _sock_fd;
+	std::string _ip_addr;
+	std::string _nick;
+	std::string _username;
+	int _authenticated;
+	std::map<std::string, Channel *> _channels;
 };
-
-std::ostream &			operator<<( std::ostream & o, Client const & i );

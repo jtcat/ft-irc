@@ -1,15 +1,16 @@
-#include "Chanel.hpp"
+#include "Channel.hpp"
 
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Chanel::Chanel()
+Channel::Channel()
 {
 }
 
-Chanel::Chanel( const Chanel & src )
+Channel::Channel( const Channel & src )
 {
+	(void)src;
 }
 
 
@@ -17,7 +18,7 @@ Chanel::Chanel( const Chanel & src )
 ** -------------------------------- DESTRUCTOR --------------------------------
 */
 
-Chanel::~Chanel()
+Channel::~Channel()
 {
 }
 
@@ -25,19 +26,14 @@ Chanel::~Chanel()
 ** --------------------------------- OVERLOAD ---------------------------------
 */
 
-Chanel &				Chanel::operator=( Chanel const & rhs )
+Channel &				Channel::operator=( Channel const & rhs )
 {
 	//if ( this != &rhs )
 	//{
 		//this->_value = rhs.getValue();
 	//}
+	(void)rhs;
 	return *this;
-}
-
-std::ostream &			operator<<( std::ostream & o, Chanel const & i )
-{
-	//o << "Value = " << i.getValue();
-	return o;
 }
 
 
@@ -45,6 +41,34 @@ std::ostream &			operator<<( std::ostream & o, Chanel const & i )
 ** --------------------------------- METHODS ----------------------------------
 */
 
+std::set<Client *>::iterator Channel::getUserbyNick(const std::string &nick) const
+{
+	for (std::set<Client *>::iterator it = _users.begin(); it != _users.end(); it++)
+	{
+		if ((*it)->getNick() == nick)
+			return it;
+	}
+	return (_users.end());
+}
+std::set<Client *>::iterator Channel::getOpbyNick(const std::string &nick) const
+{
+	for (std::set<Client *>::iterator it = _op.begin(); it != _op.end(); it++)
+	{
+		if ((*it)->getNick() == nick)
+			return it;
+	}
+	return (_op.end());
+}
+void Channel::delUser(const std::string &nick)
+{
+	std::set<Client *>::iterator user_it = getUserbyNick(nick);
+	std::set<Client *>::iterator op_it = getOpbyNick(nick);
+
+	if (user_it != _users.end())
+		_users.erase(user_it);
+	if (op_it != _op.end())
+		_op.erase(op_it);
+}
 
 /*
 ** --------------------------------- ACCESSOR ---------------------------------
@@ -52,3 +76,4 @@ std::ostream &			operator<<( std::ostream & o, Chanel const & i )
 
 
 /* ************************************************************************** */
+

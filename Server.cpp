@@ -1,9 +1,13 @@
 #include "Server.hpp"
+#include "Client.hpp"
 #include <unistd.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include "MessageParser.hpp"
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 Server::Server(int port) : _pfds(), _fd_count(0)
 {
 	_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -42,23 +46,25 @@ void Server::bind()
 	}
 }
 
-int Server::accept()
+const Client Server::accept()
 {
 	unsigned int addr_size;
 	int newsock_fd;
 	struct sockaddr_in client_addr;
+	char ip_str[INET_ADDRSTRLEN];
 
 	addr_size = sizeof(client_addr);
 	newsock_fd = ::accept(
 		_sock_fd, reinterpret_cast<struct sockaddr *>(&client_addr), &addr_size);
-
 	if (newsock_fd < 0)
 	{
 		perror("ERROR on accept");
 		exit(1);
 	}
-
-	return newsock_fd;
+	inet_ntop(AF_INET, &(client_addr.sin_addr), ip_str, INET6_ADDRSTRLEN);
+	std::cout << "In accept rn" << std::endl;
+	// std::cout << "ip str in accept = " << ip_str << std::endl;
+	return (Client(newsock_fd, std::string(ip_str)));
 }
 
 void Server::addPollFd(int client_fd)
@@ -75,10 +81,18 @@ void Server::addPollFd(int client_fd)
 
 void Server::delPollFd(int i)
 {
-	close(_pfds[i].fd);
 	_pfds.erase(_pfds.begin() + i);
 	_fd_count--;
 };
+
+void Server::registerNewClient() {
+
+	Client * new_client = new Client(this->accept());
+	// std::cout << "new Client with ip = " << new_client->getIpAddr() <<" and fd = " << new_client->getSockFd()<< std::endl;
+	int new_sock_fd = new_client->getSockFd();
+	_clients[new_sock_fd] = new_client;
+	this->addPollFd(new_sock_fd);
+}
 
 void Server::broadcast(int sender_fd, char *msg, int nbytes)
 {
@@ -95,15 +109,9 @@ void Server::broadcast(int sender_fd, char *msg, int nbytes)
 	}
 }
 
-// void	Server::procMsg(const std::string& buf) {
-// 	static	MessageParser	parser;
-
-// 	parser.parseMessage(buf.begin());
-// }
 
 void Server::monitorClients()
 {
-	int client_fd;
 	char buff[512];
 
 	this->addPollFd(_sock_fd);
@@ -120,11 +128,9 @@ void Server::monitorClients()
 			if (_pfds[i].revents & POLLIN)
 			{ // We got one!!
 				if (_pfds[i].fd == _sock_fd)
-				{ // any attempt to connect?
+				{
 				  // CHECK CONNECTION LIMIT
-					client_fd = this->accept();
-					this->addPollFd(client_fd);
-					// std::cout << "NEW CONNECTION" << std::endl;
+					registerNewClient();
 				}
 				else
 				{
@@ -135,7 +141,11 @@ void Server::monitorClients()
 					{
 						// Got error or connection closed by client
 						if (bytes_read == 0)
+						{
 							std::cerr << "pollserver: socket hung up" << std::endl;
+							delete _clients[_pfds[i].fd];
+							_clients.erase(_pfds[i].fd);
+						}
 						else
 							perror("recv");
 						delPollFd(i);
@@ -143,11 +153,8 @@ void Server::monitorClients()
 					else
 					{
 						MessageParser::parseBuffer(buff);
-						// std::cout << "ola" << std::endl;
 						// broadcast(_pfds[i].fd, buff, bytes_read);
 					}
-					//test with hexchat
-					//make a flag so that whitespaces after : are not skipped
 				}
 			}
 		}

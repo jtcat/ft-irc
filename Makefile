@@ -1,8 +1,8 @@
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -g
-SRCS = main.cpp Server.cpp MessageParser.cpp
+SRCS = main.cpp Server.cpp MessageParser.cpp Client.cpp Channel.cpp
 NAME = ircserv
-HEADERS = Server.hpp MessageParser.hpp
+HEADERS = Server.hpp MessageParser.hpp Client.hpp Channel.hpp
 
 all: $(NAME)
 

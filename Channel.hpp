@@ -9,16 +9,18 @@ class Client;
 
 class Channel
 {
-	public:
-		Channel(void);
-		Channel(Channel const & src );
-		~Channel(void);
+public:
+	Channel(void);
+	~Channel(void);
 
-		Channel&	operator=(Channel const & rhs );
+	std::set<Client *>::iterator getUserbyNick(const std::string &nick) const;
+	std::set<Client *>::iterator getOpbyNick(const std::string &nick) const;
+	void delUser(const std::string &nick);
 
-	private:
-		std::set<std::string, Client *> _users;
-		std::set<std::string, Client *> _operators;
+private:
+	std::set<Client *> _users;
+	std::set<Client *> _op;
+	Channel &operator=(Channel const &rhs);
+	Channel(Channel const &src);
 };
 
-std::ostream &			operator<<( std::ostream & o, Channel const & i );

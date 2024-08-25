@@ -1,5 +1,8 @@
 #include "Client.hpp"
-
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
@@ -10,8 +13,10 @@ Client::Client()
 
 Client::Client( const Client & src )
 {
+	*this = src;
 }
 
+Client::Client(int sock_fd, std::string ip_addr) : _sock_fd(sock_fd) , _ip_addr(ip_addr){}
 
 /*
 ** -------------------------------- DESTRUCTOR --------------------------------
@@ -19,8 +24,13 @@ Client::Client( const Client & src )
 
 Client::~Client()
 {
+	//when a client is deleted we need to erase its entry from the list of users
+	//of all chanels from which that client was part of
+	for (std::map<std::string, Channel *>::iterator it = _channels.begin(); it != _channels.end(); it++)
+		it->second->delUser(_nick);
+	close(_sock_fd);
+	// std::cout << "Destroying Client with ip = " << _ip_addr <<" and fd = " << _sock_fd<< std::endl;
 }
-
 
 /*
 ** --------------------------------- OVERLOAD ---------------------------------
@@ -28,17 +38,17 @@ Client::~Client()
 
 Client &				Client::operator=( Client const & rhs )
 {
-	//if ( this != &rhs )
-	//{
-		//this->_value = rhs.getValue();
-	//}
+	if ( this != &rhs )
+	{
+		_sock_fd = rhs.getSockFd();
+		_ip_addr = rhs.getIpAddr(); // Assuming _ip_addr is a pointer to a string literal or managed elsewhere
+		_nick = rhs.getNick();
+		_username = rhs.getUsername();
+		_authenticated = rhs.getAuthenticated();
+		_channels = rhs.getChannels();
+	}
+	// std::cout << "Copying Client with ip = " << _ip_addr <<" and fd = " << _sock_fd<< std::endl;
 	return *this;
-}
-
-std::ostream &			operator<<( std::ostream & o, Client const & i )
-{
-	//o << "Value = " << i.getValue();
-	return o;
 }
 
 
@@ -50,6 +60,26 @@ std::ostream &			operator<<( std::ostream & o, Client const & i )
 /*
 ** --------------------------------- ACCESSOR ---------------------------------
 */
+int Client::getSockFd() const {
+	return _sock_fd;
+}
 
+const std::string& Client::getIpAddr() const {
+	return _ip_addr;
+};
+
+const std::string& Client::getNick() const {
+	return _nick;
+}
+
+const std::string& Client::getUsername() const {
+	return _username;
+}
+int Client::getAuthenticated() const {
+	return _authenticated;
+}
+const std::map<std::string, Channel *> &Client::getChannels() const {
+	return _channels;
+}
 
 /* ************************************************************************** */
