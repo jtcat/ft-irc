@@ -2,32 +2,79 @@
 #include <sstream>
 #include <vector>
 #include <iostream>
-#include "Errors.hpp"
+#include "ERR.hpp"
+#include "RPL.hpp"
 
-// void MessageParser::setPasswd(const std::string &pass)
-// {
-// 	_passwd = pass;
-// }
-
+Server* MessageParser::_server = NULL;
 std::map<std::string, void (*)(std::vector<std::string> &, Client *)> MessageParser::command_map;
-
-void Pass_exec(std::vector<std::string> &msg_tokens, Client *client)
+void MessageParser::setServer(Server *server)
 {
-	if (msg_tokens.size() != 2)
+	MessageParser::_server = server;
+}
+
+void MessageParser::registerClient(Client *client)
+{
+	client->setRegisteredFlag(1);
+	std::cout << RPL_WELCOME(client->getNick(), client->getUsername(), client->getIpAddr()) << std::endl;
+	//plus all the other welcome messages
+}
+
+void MessageParser::Pass_exec(std::vector<std::string> &msg_tokens, Client *client)
+{
+	if (msg_tokens.size() < 2)
 		std::cout << ERR_NEEDMOREPARAMS("PASS", "Not enough parameters", client->getNick()) << std::endl;
-	else if (msg_tokens[1] != _passwd)
+	else if (client->getAuthenticatedFlag() == 1)
+		std::cout << ERR_ALREADYREGISTERED(client->getNick()) << std::endl;
+	else if (msg_tokens[1] != MessageParser::_server->_passwd)
 	{
 		std::cout << ERR_PASSWDMISMATCH() << std::endl;
-		//close connection
+		std::cout << ERROR(std::string("Closing link")) << std::endl;
+		MessageParser::_server->closeClientConnection(client->getSockFd());
+		MessageParser::_server->delPollFd();
 	}
-	else if (client->getAuthenticatedFlag() == 1)
-		std::cout << ERR_ALREADYREGISTERED(client->getNick()) <<std::endl;
 	else
+	{
 		client->setAuthenticatedFlag(1);
+		if (client->getNick() != "*" && !client->getUsername().empty())
+			registerClient(client);
+	}
 };
-void User_exec(std::vector<std::string> &msg_tokens, Client *client) {};
-void Nick_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 
+void MessageParser::User_exec(std::vector<std::string> &msg_tokens, Client *client)
+{
+	// verify USER specific syntax like username len, etc
+	if (msg_tokens.size() < 5)
+		std::cout << ERR_NEEDMOREPARAMS("USER", "Not enough parameters", client->getNick()) << std::endl;
+	else if (client->getRegisteredFlag() == 1 || !client->getUsername().empty())
+		std::cout << ERR_ALREADYREGISTERED(client->getNick()) << std::endl;
+	else
+	{
+		client->setUsername(msg_tokens[1]);
+		client->setRealname(msg_tokens[4]);
+		if (client->getNick() != "*" && client->getAuthenticatedFlag() == 1)
+			registerClient(client);
+	}
+};
+
+void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *client) {
+	// verify NICK specific syntax like username len, etc
+	if (msg_tokens.size() < 2)
+		std::cout << ERR_NONICKNAMEGIVEN() << std::endl;
+	// else if (nick already in use)
+		// std::cout << ERR_NICKNAMEINUSE(client->getNick()) << std::endl;
+	// else if (nick name not acoording to syntax)
+	// 	std::cout << ERR_ERRONEUSNICKNAME(client->getNick()) << std::endl;
+	else if (client->getRegisteredFlag() == 1)
+	{
+		//send reply to notify users of the nick change
+		client->setNick(msg_tokens[1]);
+	}
+	else {
+		client->setNick(msg_tokens[1]);
+		if (!client->getUsername().empty() && client->getAuthenticatedFlag() == 1)
+			registerClient(client);
+	}
+}
 // not registered -> valid command -> ERR_NOTREGISTERD
 // invalid command -> ignore
 void MessageParser::processUnregisteredClient(std::vector<std::string> &msg_tokens, Client *client)
@@ -36,12 +83,8 @@ void MessageParser::processUnregisteredClient(std::vector<std::string> &msg_toke
 
 	if (it != command_map.end()) // valid command but no registry -> ERR_NOTREGISTEREED
 	{
-		if (msg_tokens[0] == "PASS")
+		if (msg_tokens[0] == "PASS" || msg_tokens[0] == "NICK" || msg_tokens[0] == "USER")
 			it->second(msg_tokens, client);
-		else if (msg_tokens[0] == "NICK")
-			//check if User is set and if yes set registered flag to 1
-		else if (msg_tokens[0] == "USER")
-			//check if Nick is set and if yes set registered flag to 1 (when nick is not set its value is *)
 		else
 			std::cout << ERR_NOTREGISTERED() << std::endl;
 	}
@@ -50,6 +93,7 @@ void MessageParser::processUnregisteredClient(std::vector<std::string> &msg_toke
 
 void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client *client)
 {
+	std::map<std::string, void (*)(std::vector<std::string> &, Client *)>::iterator it = command_map.find(msg_tokens[0]);
 
 	if (command_map.empty())
 	{
@@ -59,8 +103,11 @@ void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client
 	}
 	if (client->getRegisteredFlag() == 0)
 		processUnregisteredClient(msg_tokens, client);
+	else if (it != command_map.end())
+		it->second(msg_tokens, client);
+	else
+		std::cout << ERR_UNKNOWNCOMMAND(msg_tokens[0]) << std::endl;
 }
-
 
 void printVectorWithSpaces(const std::vector<std::string> &vec)
 {
@@ -155,7 +202,6 @@ bool MessageParser::parseCommand(std::stringstream &msg, std::vector<std::string
 void MessageParser::parseBuffer(const std::string &buff, Client *client)
 {
 	std::stringstream ss_buff(buff);
-	(void)client;
 	while (!ss_buff.eof())
 	{
 		parseMessage(ss_buff, client);
@@ -172,17 +218,16 @@ bool MessageParser::parseMessage(std::stringstream &msg, Client *client)
 		return false;
 	}
 	// execute command;
-	printVectorWithSpaces(msg_tokens);
+	execute_command(msg_tokens, client);
+	// printVectorWithSpaces(msg_tokens);
 
-		std::cout << "message size = " << msg_tokens.size() << std::endl;
 	return true;
 }
 
-
-//when we have quit, how do we access the values of server??
-//should message parser be a friend of server?
-//should we pass an instance of server to messgae parser and have an iterator point to the current client were processing?
-// check for nic:k
-// PASS must be the first command or -> ERR_NOTREGISTERED (451)
-// THEN NICK and USER or vice-versa
-// THEN WELCOME MESSAGE
+// when we have quit, how do we access the values of server??
+// should message parser be a friend of server?
+// should we pass an instance of server to messgae parser and have an iterator point to the current client were processing?
+//  check for nic:k
+//  PASS must be the first command or -> ERR_NOTREGISTERED (451)
+//  THEN NICK and USER or vice-versa
+//  THEN WELCOME MESSAGE

@@ -21,8 +21,12 @@ public:
 	int getRegisteredFlag() const;
 	void setAuthenticatedFlag(int flag);
 	void setRegisteredFlag(int flag);
+	void setUsername(const std::string &username);
+	void setNick(const std::string &nick);
+	void setRealname(const std::string &realname);
 	const std::map<std::string, Channel *> &getChannels() const;
 	Client &operator=(Client const &rhs);
+	friend std::ostream& operator<<(std::ostream& os, const Client& client);
 
 private:
 	Client(void);
@@ -30,6 +34,7 @@ private:
 	std::string _ip_addr;
 	std::string _nick;
 	std::string _username;
+	std::string _realname;
 	int _authenticated;
 	int _registered;
 	std::map<std::string, Channel *> _channels;

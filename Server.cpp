@@ -9,7 +9,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-Server::Server(int port, const std::string &passwd) : _pfds(), _fd_count(0), _passwd(passwd)
+Server::Server(int port, const std::string &passwd) : _poll_i(0), _pfds(), _passwd(passwd),  _fd_count(0)
 {
 	_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -79,43 +79,46 @@ void Server::addPollFd(int client_fd)
 	_fd_count++;
 }
 
-void Server::delPollFd(int i)
+void Server::delPollFd()
 {
-	_pfds.erase(_pfds.begin() + i);
+	_pfds.erase(_pfds.begin() + _poll_i);
 	_fd_count--;
 };
 
-void Server::registerNewClient() {
+void Server::registerNewClient()
+{
 
-	Client * new_client = new Client(this->accept());
+	Client *new_client = new Client(this->accept());
 	// std::cout << "new Client with ip = " << new_client->getIpAddr() <<" and fd = " << new_client->getSockFd()<< std::endl;
 	int new_sock_fd = new_client->getSockFd();
 	_clients[new_sock_fd] = new_client;
 	this->addPollFd(new_sock_fd);
 }
-void Server::closeClientConnection(int client_fd) {
+void Server::closeClientConnection(int client_fd)
+{
 	delete _clients[client_fd];
 	_clients.erase(client_fd);
 }
 
-void Server::broadcast(int sender_fd, char *msg, int nbytes)
-{
-	for (size_t i = 0; i < _pfds.size(); i++)
-	{
-		int dest = _pfds[i].fd;
-		if (dest != _sock_fd && dest != sender_fd)
-		{
-			if (send(dest, msg, nbytes, 0) == -1)
-			{
-				perror("send");
-			}
-		}
-	}
-}
+// void Server::broadcast(int sender_fd, char *msg, int nbytes)
+// {
+// 	for (size_t i = 0; i < _pfds.size(); i++)
+// 	{
+// 		int dest = _pfds[i].fd;
+// 		if (dest != _sock_fd && dest != sender_fd)
+// 		{
+// 			if (send(dest, msg, nbytes, 0) == -1)
+// 			{
+// 				perror("send");
+// 			}
+// 		}
+// 	}
+// }
 
 void Server::monitorClients()
 {
 	char buff[512];
+	MessageParser::setServer(this);
 	this->addPollFd(_sock_fd);
 	while (true)
 	{
@@ -125,19 +128,20 @@ void Server::monitorClients()
 			perror("poll");
 			exit(1);
 		}
-		for (size_t i = 0; i < _pfds.size(); i++)
+		_poll_i = 0;
+		while (_poll_i < _pfds.size())
 		{
-			if (_pfds[i].revents & POLLIN)
+			if (_pfds[_poll_i].revents & POLLIN)
 			{
-				if (_pfds[i].fd == _sock_fd)
+				if (_pfds[_poll_i].fd == _sock_fd)
 				{
-				  // CHECK CONNECTION LIMIT
+					// CHECK CONNECTION LIMIT
 					registerNewClient();
 				}
 				else
 				{
 					bzero(buff, 512);
-					int bytes_read = recv(_pfds[i].fd, buff, sizeof(buff), 0);
+					int bytes_read = recv(_pfds[_poll_i].fd, buff, sizeof(buff), 0);
 					if (bytes_read <= 0)
 					{
 						// Got error or connection closed by client
@@ -145,15 +149,16 @@ void Server::monitorClients()
 							std::cerr << "pollserver: socket hung up" << std::endl;
 						else
 							perror("recv");
-						closeClientConnection(_pfds[i].fd);
-						delPollFd(i);
+						closeClientConnection(_pfds[_poll_i].fd);
+						delPollFd();
 					}
 					else
 					{
-						MessageParser::parseBuffer(buff, _clients[_pfds[i].fd]);
+						MessageParser::parseBuffer(buff, _clients[_pfds[_poll_i].fd]);
 					}
 				}
 			}
+			_poll_i++;
 		}
 	}
 }

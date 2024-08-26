@@ -16,7 +16,7 @@ Client::Client(const Client &src)
 	*this = src;
 }
 
-Client::Client(int sock_fd, std::string ip_addr) : _sock_fd(sock_fd), _ip_addr(ip_addr), _nick("*") ,_authenticated(0), _registered(0) {}
+Client::Client(int sock_fd, std::string ip_addr) : _sock_fd(sock_fd), _ip_addr(ip_addr), _nick("*") ,_username("") , _authenticated(0), _registered(0) {}
 
 /*
 ** -------------------------------- DESTRUCTOR --------------------------------
@@ -77,14 +77,17 @@ const std::string &Client::getUsername() const
 {
 	return _username;
 }
+
 int Client::getRegisteredFlag() const
 {
 	return _registered;
 }
+
 int Client::getAuthenticatedFlag() const
 {
 	return _authenticated;
 }
+
 const std::map<std::string, Channel *> &Client::getChannels() const
 {
 	return _channels;
@@ -96,4 +99,20 @@ void Client::setAuthenticatedFlag(int flag) {
 void Client::setRegisteredFlag(int flag) {
 	_registered = flag;
 };
+void Client::setUsername(const std::string &username)  {
+	_username = username;
+};
+void Client::setNick(const std::string &nick) {
+	_nick = nick;
+};
+void Client::setRealname(const std::string &realname) {
+	_realname = realname;
+};
+std::ostream& operator<<(std::ostream& os, const Client& client) {
+    os << "Nick: " << client._nick << "\n"
+       << "User: " << client._username << "\n"
+       << "Host: " << client._ip_addr << "\n";
+    // Print other members as needed...
+    return os;
+}
 /* ************************************************************************** */
