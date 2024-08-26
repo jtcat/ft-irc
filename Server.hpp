@@ -15,7 +15,8 @@
 
 class Server {
 	public:
-		Server(int port);
+		friend MessageParser;
+		Server(int port, const std::string &passwd);
 		~Server(void);
 
 		void	bind(void);
@@ -27,12 +28,13 @@ class Server {
 		void	delPollFd(int i);
 		void	broadcast(int sender_fd, char *msg, int nbytes);
 		void	registerNewClient();
+		void	closeClientConnection(int client_fd);
 		//	int read(int client_sock, char* buffer, size_t size);
-
 	private:
 		int									_sock_fd;
 		struct sockaddr_in 					_serv_addr;
 		std::vector<struct pollfd> 			_pfds;
+		std::string							_passwd;
 		int 								_fd_count;
 		std::map<std::string , Channel *> 	_channels;
 		std::map<int ,Client *> 	_clients;

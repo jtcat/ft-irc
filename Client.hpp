@@ -17,7 +17,10 @@ public:
 	const std::string &getIpAddr() const;
 	const std::string &getNick() const;
 	const std::string &getUsername() const;
-	int getAuthenticated() const;
+	int getAuthenticatedFlag() const;
+	int getRegisteredFlag() const;
+	void setAuthenticatedFlag(int flag);
+	void setRegisteredFlag(int flag);
 	const std::map<std::string, Channel *> &getChannels() const;
 	Client &operator=(Client const &rhs);
 

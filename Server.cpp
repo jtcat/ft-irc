@@ -8,7 +8,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-Server::Server(int port) : _pfds(), _fd_count(0)
+
+Server::Server(int port, const std::string &passwd) : _pfds(), _fd_count(0), _passwd(passwd)
 {
 	_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -69,7 +70,6 @@ const Client Server::accept()
 
 void Server::addPollFd(int client_fd)
 {
-	// std::cout << "Add to Poll fd = "<<client_fd << std::endl;
 	struct pollfd temp_pfds;
 
 	temp_pfds.fd = client_fd;
@@ -93,6 +93,10 @@ void Server::registerNewClient() {
 	_clients[new_sock_fd] = new_client;
 	this->addPollFd(new_sock_fd);
 }
+void Server::closeClientConnection(int client_fd) {
+	delete _clients[client_fd];
+	_clients.erase(client_fd);
+}
 
 void Server::broadcast(int sender_fd, char *msg, int nbytes)
 {
@@ -112,7 +116,6 @@ void Server::broadcast(int sender_fd, char *msg, int nbytes)
 void Server::monitorClients()
 {
 	char buff[512];
-
 	this->addPollFd(_sock_fd);
 	while (true)
 	{
@@ -125,7 +128,7 @@ void Server::monitorClients()
 		for (size_t i = 0; i < _pfds.size(); i++)
 		{
 			if (_pfds[i].revents & POLLIN)
-			{ // We got one!!
+			{
 				if (_pfds[i].fd == _sock_fd)
 				{
 				  // CHECK CONNECTION LIMIT
@@ -134,25 +137,20 @@ void Server::monitorClients()
 				else
 				{
 					bzero(buff, 512);
-					// std::cout << "sizeof buff = " << sizeof(buff)/sizeof(char) << std::endl;
 					int bytes_read = recv(_pfds[i].fd, buff, sizeof(buff), 0);
 					if (bytes_read <= 0)
 					{
 						// Got error or connection closed by client
 						if (bytes_read == 0)
-						{
 							std::cerr << "pollserver: socket hung up" << std::endl;
-							delete _clients[_pfds[i].fd];
-							_clients.erase(_pfds[i].fd);
-						}
 						else
 							perror("recv");
+						closeClientConnection(_pfds[i].fd);
 						delPollFd(i);
 					}
 					else
 					{
 						MessageParser::parseBuffer(buff, _clients[_pfds[i].fd]);
-						// broadcast(_pfds[i].fd, buff, bytes_read);
 					}
 				}
 			}

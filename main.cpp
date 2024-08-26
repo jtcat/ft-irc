@@ -13,16 +13,18 @@
 
 int main(int argc, char **argv) {
   int portno;
-
+  std::string pass;
   if (argc != 3) {
     std::cerr << "Invalid number of arguments" << std::endl;
     return 1;
   }
 
-  std::stringstream ss(argv[1]);
-  ss >> portno;
+  std::stringstream ss_port(argv[1]);
+  std::stringstream ss_pass(argv[2]);
 
-  Server server(portno);
+  ss_port >> portno;
+  ss_pass >> pass;
+  Server server(portno, pass);
 
   server.bind();
   server.listen(5);
