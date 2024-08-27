@@ -63,9 +63,25 @@ const Client Server::accept()
 		exit(1);
 	}
 	inet_ntop(AF_INET, &(client_addr.sin_addr), ip_str, INET6_ADDRSTRLEN);
-	std::cout << "In accept rn" << std::endl;
 	// std::cout << "ip str in accept = " << ip_str << std::endl;
 	return (Client(newsock_fd, std::string(ip_str)));
+}
+int Server::send(Client *client, const std::string & msg) {
+	const char * msg_c_str = msg.c_str();
+	size_t len = strlen(msg_c_str);
+	size_t bytes_sent = 0;
+	size_t total_bytes_sent = 0;
+	while (total_bytes_sent < len)
+	{
+		bytes_sent = ::send(client->getSockFd(), msg_c_str + total_bytes_sent, len - total_bytes_sent , 0);
+		if (static_cast<int>(bytes_sent) == -1)
+		{
+			perror("send");
+			return -1;
+		}
+		total_bytes_sent += bytes_sent;
+	}
+	return total_bytes_sent;
 }
 
 void Server::addPollFd(int client_fd)

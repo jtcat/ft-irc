@@ -15,20 +15,20 @@ void MessageParser::setServer(Server *server)
 void MessageParser::registerClient(Client *client)
 {
 	client->setRegisteredFlag(1);
-	std::cout << RPL_WELCOME(client->getNick(), client->getUsername(), client->getIpAddr()) << std::endl;
+	Server::send(client, RPL_WELCOME(client->getNick(), client->getUsername(), client->getIpAddr()));
 	//plus all the other welcome messages
 }
 
 void MessageParser::Pass_exec(std::vector<std::string> &msg_tokens, Client *client)
 {
 	if (msg_tokens.size() < 2)
-		std::cout << ERR_NEEDMOREPARAMS("PASS", "Not enough parameters", client->getNick()) << std::endl;
+		Server::send(client, ERR_NEEDMOREPARAMS("PASS", "Not enough parameters", client->getNick()));
 	else if (client->getAuthenticatedFlag() == 1)
-		std::cout << ERR_ALREADYREGISTERED(client->getNick()) << std::endl;
+		Server::send(client ,ERR_ALREADYREGISTERED(client->getNick()));
 	else if (msg_tokens[1] != MessageParser::_server->_passwd)
 	{
-		std::cout << ERR_PASSWDMISMATCH() << std::endl;
-		std::cout << ERROR(std::string("Closing link")) << std::endl;
+		Server::send(client, ERR_PASSWDMISMATCH());
+		Server::send(client, ERROR(std::string("Closing link")));
 		MessageParser::_server->closeClientConnection(client->getSockFd());
 		MessageParser::_server->delPollFd();
 	}
@@ -44,9 +44,9 @@ void MessageParser::User_exec(std::vector<std::string> &msg_tokens, Client *clie
 {
 	// verify USER specific syntax like username len, etc
 	if (msg_tokens.size() < 5)
-		std::cout << ERR_NEEDMOREPARAMS("USER", "Not enough parameters", client->getNick()) << std::endl;
+		Server::send(client, ERR_NEEDMOREPARAMS("USER", "Not enough parameters", client->getNick()));
 	else if (client->getRegisteredFlag() == 1 || !client->getUsername().empty())
-		std::cout << ERR_ALREADYREGISTERED(client->getNick()) << std::endl;
+		Server::send(client, ERR_ALREADYREGISTERED(client->getNick()));
 	else
 	{
 		client->setUsername(msg_tokens[1]);
@@ -59,11 +59,11 @@ void MessageParser::User_exec(std::vector<std::string> &msg_tokens, Client *clie
 void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *client) {
 	// verify NICK specific syntax like username len, etc
 	if (msg_tokens.size() < 2)
-		std::cout << ERR_NONICKNAMEGIVEN() << std::endl;
-	// else if (nick already in use)
-		// std::cout << ERR_NICKNAMEINUSE(client->getNick()) << std::endl;
+		Server::send(client, ERR_NONICKNAMEGIVEN());
+			// else if (nick already in use)
+		// Server::send(client, ERR_NICKNAMEINUSE(client->getNick()));
 	// else if (nick name not acoording to syntax)
-	// 	std::cout << ERR_ERRONEUSNICKNAME(client->getNick()) << std::endl;
+	// 	Server::send(client, ERR_ERRONEUSNICKNAME(client->getNick()));
 	else if (client->getRegisteredFlag() == 1)
 	{
 		//send reply to notify users of the nick change
@@ -86,13 +86,15 @@ void MessageParser::processUnregisteredClient(std::vector<std::string> &msg_toke
 		if (msg_tokens[0] == "PASS" || msg_tokens[0] == "NICK" || msg_tokens[0] == "USER")
 			it->second(msg_tokens, client);
 		else
-			std::cout << ERR_NOTREGISTERED() << std::endl;
+			Server::send(client, ERR_NOTREGISTERED());
 	}
 	// invalid command before registry is ignored;
 }
 
 void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client *client)
 {
+	if (msg_tokens.size() == 0)
+		return ;
 	std::map<std::string, void (*)(std::vector<std::string> &, Client *)>::iterator it = command_map.find(msg_tokens[0]);
 
 	if (command_map.empty())
@@ -106,7 +108,7 @@ void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client
 	else if (it != command_map.end())
 		it->second(msg_tokens, client);
 	else
-		std::cout << ERR_UNKNOWNCOMMAND(msg_tokens[0]) << std::endl;
+		Server::send(client, ERR_UNKNOWNCOMMAND(msg_tokens[0]));
 }
 
 void printVectorWithSpaces(const std::vector<std::string> &vec)

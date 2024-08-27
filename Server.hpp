@@ -24,6 +24,7 @@ public:
 	void listen(int n);
 	const Client accept(void);
 	int getSockFd(void);
+	static int send(Client *client, const std::string &msg);
 	void monitorClients(void);
 	void addPollFd(int client_fd);
 	void delPollFd();
