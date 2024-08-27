@@ -66,6 +66,7 @@ const Client Server::accept()
 	// std::cout << "ip str in accept = " << ip_str << std::endl;
 	return (Client(newsock_fd, std::string(ip_str)));
 }
+
 int Server::send(Client *client, const std::string & msg) {
 	const char * msg_c_str = msg.c_str();
 	size_t len = strlen(msg_c_str);
@@ -103,13 +104,14 @@ void Server::delPollFd()
 
 void Server::registerNewClient()
 {
-
 	Client *new_client = new Client(this->accept());
 	// std::cout << "new Client with ip = " << new_client->getIpAddr() <<" and fd = " << new_client->getSockFd()<< std::endl;
 	int new_sock_fd = new_client->getSockFd();
 	_clients[new_sock_fd] = new_client;
+	_client_users.insert(std::make_pair(new_client->getNick(), new_client));
 	this->addPollFd(new_sock_fd);
 }
+
 void Server::closeClientConnection(int client_fd)
 {
 	delete _clients[client_fd];

@@ -9,6 +9,7 @@ class Client;
 
 class Channel
 {
+	friend class MessageParser;
 public:
 	Channel(void);
 	~Channel(void);

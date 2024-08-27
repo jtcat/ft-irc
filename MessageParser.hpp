@@ -22,9 +22,9 @@ public:
 	static void User_exec(std::vector<std::string> &msg_tokens, Client *client);
 	static void Nick_exec(std::vector<std::string> &msg_tokens, Client *client);
 	static void Join_exec(std::vector<std::string> &msg_tokens, Client *client);
+	static void Privmsg_exec(std::vector<std::string> &msg_tokens, Client *client);
 	static void Quit_exec(std::vector<std::string> &msg_tokens, Client *client);
 	static void Part_exec(std::vector<std::string> &msg_tokens, Client *client);
-	static void Privmsg_exec(std::vector<std::string> &msg_tokens, Client *client);
 	static void Oper_exec(std::vector<std::string> &msg_tokens, Client *client);
 	static void Mode_exec(std::vector<std::string> &msg_tokens, Client *client);
 	static void Topic_exec(std::vector<std::string> &msg_tokens, Client *client);
