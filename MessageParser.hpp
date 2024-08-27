@@ -17,9 +17,20 @@ public:
 	static bool parseParams(std::stringstream &msg, std::vector<std::string> &msg_tokens);
 	static void processUnregisteredClient(std::vector<std::string> &msg_tokens, Client *client);
 	static void execute_command(std::vector<std::string> &msg_token, Client *client);
+
 	static void Pass_exec(std::vector<std::string> &msg_tokens, Client *client);
 	static void User_exec(std::vector<std::string> &msg_tokens, Client *client);
 	static void Nick_exec(std::vector<std::string> &msg_tokens, Client *client);
+	static void Join_exec(std::vector<std::string> &msg_tokens, Client *client);
+	static void Quit_exec(std::vector<std::string> &msg_tokens, Client *client);
+	static void Part_exec(std::vector<std::string> &msg_tokens, Client *client);
+	static void Privmsg_exec(std::vector<std::string> &msg_tokens, Client *client);
+	static void Oper_exec(std::vector<std::string> &msg_tokens, Client *client);
+	static void Mode_exec(std::vector<std::string> &msg_tokens, Client *client);
+	static void Topic_exec(std::vector<std::string> &msg_tokens, Client *client);
+	static void Kick_exec(std::vector<std::string> &msg_tokens, Client *client);
+	static void Invite_exec(std::vector<std::string> &msg_tokens, Client *client);
+
 	static void registerClient(Client *client);
 
 	static void setServer(Server *server);

@@ -7,6 +7,7 @@
 
 Server* MessageParser::_server = NULL;
 std::map<std::string, void (*)(std::vector<std::string> &, Client *)> MessageParser::command_map;
+
 void MessageParser::setServer(Server *server)
 {
 	MessageParser::_server = server;
@@ -18,7 +19,6 @@ void MessageParser::registerClient(Client *client)
 	Server::send(client, RPL_WELCOME(client->getNick(), client->getUsername(), client->getIpAddr()));
 	//plus all the other welcome messages
 }
-
 void MessageParser::Pass_exec(std::vector<std::string> &msg_tokens, Client *client)
 {
 	if (msg_tokens.size() < 2)
@@ -60,8 +60,8 @@ void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *clie
 	// verify NICK specific syntax like username len, etc
 	if (msg_tokens.size() < 2)
 		Server::send(client, ERR_NONICKNAMEGIVEN());
-			// else if (nick already in use)
-		// Server::send(client, ERR_NICKNAMEINUSE(client->getNick()));
+	// else if (nick already in use)
+	// 	Server::send(client, ERR_NICKNAMEINUSE(client->getNick()));
 	// else if (nick name not acoording to syntax)
 	// 	Server::send(client, ERR_ERRONEUSNICKNAME(client->getNick()));
 	else if (client->getRegisteredFlag() == 1)
@@ -75,6 +75,23 @@ void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *clie
 			registerClient(client);
 	}
 }
+void MessageParser::Join_exec(std::vector<std::string> &msg_tokens, Client *client) {
+	//check for valid chanel names;
+	//check for , separating the chanels intended to join;
+	//check the chanel modes (invite only?), (key required?)
+	//write function to broadcast replies to all members of a chanel;
+};
+void MessageParser::Quit_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+void MessageParser::Part_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+void MessageParser::Privmsg_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+void MessageParser::Oper_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+void MessageParser::Mode_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+void MessageParser::Topic_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+void MessageParser::Kick_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+void MessageParser::Invite_exec(std::vector<std::string> &msg_tokens, Client *client) {
+	//how are invites gonna be handled? do they last forever ?
+};
+
 // not registered -> valid command -> ERR_NOTREGISTERD
 // invalid command -> ignore
 void MessageParser::processUnregisteredClient(std::vector<std::string> &msg_tokens, Client *client)
@@ -102,6 +119,15 @@ void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client
 		command_map["PASS"] = &MessageParser::Pass_exec;
 		command_map["USER"] = &MessageParser::User_exec;
 		command_map["NICK"] = &MessageParser::Nick_exec;
+		command_map["JOIN"] = &MessageParser::Join_exec;
+		command_map["QUIT"] = &MessageParser::Quit_exec;
+		command_map["PART"] = &MessageParser::Part_exec;
+		command_map["PRIVMSG"] = &MessageParser::Privmsg_exec;
+		command_map["OPER"] = &MessageParser::Oper_exec;
+		command_map["MODE"] = &MessageParser::Mode_exec;
+		command_map["TOPIC"] = &MessageParser::Topic_exec;
+		command_map["KICK"] = &MessageParser::Kick_exec;
+		command_map["INVITE"] = &MessageParser::Invite_exec;
 	}
 	if (client->getRegisteredFlag() == 0)
 		processUnregisteredClient(msg_tokens, client);
@@ -226,10 +252,7 @@ bool MessageParser::parseMessage(std::stringstream &msg, Client *client)
 	return true;
 }
 
-// when we have quit, how do we access the values of server??
-// should message parser be a friend of server?
-// should we pass an instance of server to messgae parser and have an iterator point to the current client were processing?
-//  check for nic:k
-//  PASS must be the first command or -> ERR_NOTREGISTERED (451)
-//  THEN NICK and USER or vice-versa
-//  THEN WELCOME MESSAGE
+//handle signals
+//handle freeing resources before exit(1) to clean allocated resources
+//should chanel operators be stored together with users or separetely?
+//when user is promoted to oper its entry gets removed from the users list and gets added to the operators
