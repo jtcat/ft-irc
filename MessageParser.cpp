@@ -22,7 +22,7 @@ void MessageParser::registerClient(Client *client)
 void MessageParser::Pass_exec(std::vector<std::string> &msg_tokens, Client *client)
 {
 	if (msg_tokens.size() < 2)
-		Server::send(client, ERR_NEEDMOREPARAMS("PASS", "Not enough parameters", client->getNick()));
+		Server::send(client, ERR_NEEDMOREPARAMS("PASS", client->getNick()));
 	else if (client->getAuthenticatedFlag() == 1)
 		Server::send(client ,ERR_ALREADYREGISTERED(client->getNick()));
 	else if (msg_tokens[1] != MessageParser::_server->_passwd)
@@ -44,7 +44,7 @@ void MessageParser::User_exec(std::vector<std::string> &msg_tokens, Client *clie
 {
 	// verify USER specific syntax like username len, etc
 	if (msg_tokens.size() < 5)
-		Server::send(client, ERR_NEEDMOREPARAMS("USER", "Not enough parameters", client->getNick()));
+		Server::send(client, ERR_NEEDMOREPARAMS("USER", client->getNick()));
 	else if (client->getRegisteredFlag() == 1 || !client->getUsername().empty())
 		Server::send(client, ERR_ALREADYREGISTERED(client->getNick()));
 	else
@@ -75,22 +75,93 @@ void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *clie
 			registerClient(client);
 	}
 }
+
+std::vector<std::string> split(const std::string &str, char delimiter) {
+	std::vector<std::string> tokens;
+	std::stringstream ss(str);
+	std::string token;
+
+	while (std::getline(ss, token, delimiter)) {
+		tokens.push_back(token);
+	}
+
+	return tokens;
+}
+
+std::map<std::string, std::string> MessageParser::Parse_join_params(std::vector<std::string> &msg_tokens, Client *client)
+{
+	// (beginning with a '&', '#', '+' or '!'character) of length up to fifty (50)
+	std::map<std::string, std::string> channels;
+	if (msg_tokens.size() < 2)
+		Server::send(client, ERR_NEEDMOREPARAMS("JOIN", client->getNick()));
+	else {
+		std::vector<std::string> names = split(msg_tokens[1], ',');
+		std::vector<std::string> pass;
+		if (msg_tokens.size() >= 3)
+			pass = split(msg_tokens[2], ',');
+		for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); it++)
+		{
+			if (!it->empty() && ((*it)[0] != '&' && (*it)[0] != '#' && (*it)[0] != '+' && (*it)[0] != '!' || (*it).length() > 50))
+			{
+				Server::send(client, ERR_BADCHANMASK(*it));
+				(*it) = "";
+			}
+		}
+		size_t j = pass.size();
+		for (size_t i = 0; i < names.size(); i++)
+			channels[names[i]] = i <= j ? pass[i] : "";
+	}
+	return channels;
+}
+
 void MessageParser::Join_exec(std::vector<std::string> &msg_tokens, Client *client) {
-	//check for valid chanel names;
-	//check for , separating the chanels intended to join;
-	//check the chanel modes (invite only?), (key required?)
+	std::map<std::string, std::string> join_list = Parse_join_params(msg_tokens, client);
+	if (join_list.size() < 1)
+		return ;
+	for (std::map<std::string, std::string>::iterator it_join_list = join_list.begin(); it_join_list != join_list.end(); it_join_list++)
+	{
+		std::map<std::string, Channel *>::iterator it_channel = MessageParser::_server->_channels.find(it_join_list->first);
+		//chanel exists?
+		if (it_channel != MessageParser::_server->_channels.end())
+		{
+			//check if client isn't already a member of that channel and do nothing if so
+			if (client->isUserMemberOfChannel(it_channel->first))
+				return ;
+			else if (it_channel->second->getUserLimit() >= it_channel->second->getUsers().size())
+				Server::send(client, ERR_CHANNELISFULL(it_channel->first));
+			else if (it_channel->second->getInviteFlag() == 1)
+			{
+				//check if user is part of the invites group of the channel;
+				if (it_channel->second->checkIfUserInvited(client) == 1)
+				{	//add channel to client's channel list
+					//add user to the channel
+					//delete user from the invites list
+					//send Join reply
+				}
+				else
+					Server::send(client, ERR_INVITEONLYCHAN(it_channel->first));
+			}
+			else if (!it_channel->second->getPasswd().empty())
+			{
+				// channel is in key mode and check if a password was provided
+			}
+			else
+				//channel not in key mode nor invite-only, simply join
+		}
+		//create channel
+	}
 	//write function to broadcast replies to all members of a chanel;
 };
-void MessageParser::Quit_exec(std::vector<std::string> &msg_tokens, Client *client) {};
-void MessageParser::Part_exec(std::vector<std::string> &msg_tokens, Client *client) {};
-void MessageParser::Privmsg_exec(std::vector<std::string> &msg_tokens, Client *client) {};
-void MessageParser::Oper_exec(std::vector<std::string> &msg_tokens, Client *client) {};
-void MessageParser::Mode_exec(std::vector<std::string> &msg_tokens, Client *client) {};
-void MessageParser::Topic_exec(std::vector<std::string> &msg_tokens, Client *client) {};
-void MessageParser::Kick_exec(std::vector<std::string> &msg_tokens, Client *client) {};
-void MessageParser::Invite_exec(std::vector<std::string> &msg_tokens, Client *client) {
-	//how are invites gonna be handled? do they last forever ?
-};
+// void MessageParser::Quit_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+// void MessageParser::Part_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+// void MessageParser::Privmsg_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+// void MessageParser::Oper_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+// void MessageParser::Mode_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+// void MessageParser::Topic_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+// void MessageParser::Kick_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+// void MessageParser::Invite_exec(std::vector<std::string> &msg_tokens, Client *client) {
+// 	//how are invites gonna be handled? do they last forever ?
+// };
 
 // not registered -> valid command -> ERR_NOTREGISTERD
 // invalid command -> ignore
@@ -120,14 +191,14 @@ void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client
 		command_map["USER"] = &MessageParser::User_exec;
 		command_map["NICK"] = &MessageParser::Nick_exec;
 		command_map["JOIN"] = &MessageParser::Join_exec;
-		command_map["QUIT"] = &MessageParser::Quit_exec;
-		command_map["PART"] = &MessageParser::Part_exec;
-		command_map["PRIVMSG"] = &MessageParser::Privmsg_exec;
-		command_map["OPER"] = &MessageParser::Oper_exec;
-		command_map["MODE"] = &MessageParser::Mode_exec;
-		command_map["TOPIC"] = &MessageParser::Topic_exec;
-		command_map["KICK"] = &MessageParser::Kick_exec;
-		command_map["INVITE"] = &MessageParser::Invite_exec;
+		// command_map["QUIT"] = &MessageParser::Quit_exec;
+		// command_map["PART"] = &MessageParser::Part_exec;
+		// command_map["PRIVMSG"] = &MessageParser::Privmsg_exec;
+		// command_map["OPER"] = &MessageParser::Oper_exec;
+		// command_map["MODE"] = &MessageParser::Mode_exec;
+		// command_map["TOPIC"] = &MessageParser::Topic_exec;
+		// command_map["KICK"] = &MessageParser::Kick_exec;
+		// command_map["INVITE"] = &MessageParser::Invite_exec;
 	}
 	if (client->getRegisteredFlag() == 0)
 		processUnregisteredClient(msg_tokens, client);
@@ -235,6 +306,7 @@ void MessageParser::parseBuffer(const std::string &buff, Client *client)
 		parseMessage(ss_buff, client);
 	}
 }
+
 bool MessageParser::parseMessage(std::stringstream &msg, Client *client)
 {
 	std::vector<std::string> msg_tokens;
@@ -248,7 +320,6 @@ bool MessageParser::parseMessage(std::stringstream &msg, Client *client)
 	// execute command;
 	execute_command(msg_tokens, client);
 	// printVectorWithSpaces(msg_tokens);
-
 	return true;
 }
 

@@ -115,4 +115,13 @@ std::ostream& operator<<(std::ostream& os, const Client& client) {
     // Print other members as needed...
     return os;
 }
+void Client::addChannel(std::map<std::string, Channel *>::iterator &it) {
+	_channels.insert(*it);
+};
+
+bool Client::isUserMemberOfChannel(const std::string &channel) const {
+	if (_channels.find(channel) != _channels.end())
+		return true;
+	return false;
+};
 /* ************************************************************************** */

@@ -10,6 +10,7 @@ class Channel;
 class Client
 {
 public:
+	// friend class MessageParser;
 	Client(int sock_fd, std::string ip_addr);
 	Client(Client const &src);
 	~Client(void);
@@ -24,9 +25,12 @@ public:
 	void setUsername(const std::string &username);
 	void setNick(const std::string &nick);
 	void setRealname(const std::string &realname);
-	const std::map<std::string, Channel *> &getChannels() const;
+	const std::map<std::string, Channel *> &getChannels() const;\
+	void addChannel(std::map<std::string, Channel *>::iterator &it);
+	bool isUserMemberOfChannel(const std::string &channel) const;
 	Client &operator=(Client const &rhs);
 	friend std::ostream& operator<<(std::ostream& os, const Client& client);
+
 
 private:
 	Client(void);

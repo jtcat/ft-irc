@@ -7,6 +7,9 @@
 Channel::Channel()
 {
 }
+Channel::Channel(const std::string &name, Client *op) : _name(name), _user_limit(-1) , _invite_Only_flag(0) {
+	_op.insert(op);
+};
 
 Channel::Channel( const Channel & src )
 {
@@ -69,11 +72,42 @@ void Channel::delUser(const std::string &nick)
 	if (op_it != _op.end())
 		_op.erase(op_it);
 }
+bool Channel::checkIfUserInvited(Client *client) {
+	if (_invites.find(client) != _invites.end())
+		return true;
+	return false;
+}
 
 /*
 ** --------------------------------- ACCESSOR ---------------------------------
 */
 
+const std::string &Channel::getName() const {
+	return _name;
+}
+
+const std::set<Client *> &Channel::getUsers() const {
+	return _users;
+}
+
+const std::set<Client *> &Channel::getOp() const {
+	return _op;
+}
+
+const std::set<Client *> &Channel::getInvites() const {
+	return _invites;
+}
+
+const std::string &Channel::getPasswd() const {
+	return _passwd;
+}
+
+int Channel::getUserLimit() const {
+	return _user_limit;
+}
+int Channel::getInviteFlag() const {
+	return _invite_Only_flag;
+}
 
 /* ************************************************************************** */
 
