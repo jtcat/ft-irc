@@ -27,11 +27,11 @@ class Server {
 		void monitorClients(void);
 		void addPollFd(int client_fd);
 		void delPollFd();
-		void broadcast(int sender_fd, char *msg, int nbytes);
 		void registerNewClient();
 		void closeClientConnection(int client_fd);
-		//	int read(int client_sock, char* buffer, size_t size);
+		void addChannel(Channel * channel);
 
+		//	int read(int client_sock, char* buffer, size_t size);
 	private:
 		size_t _poll_i;
 		int _sock_fd;
