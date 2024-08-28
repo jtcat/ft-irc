@@ -19,6 +19,7 @@ void MessageParser::registerClient(Client *client)
 	Server::send(client, RPL_WELCOME(client->getNick(), client->getUser(), client->getHost()));
 	// plus all the other welcome messages
 }
+
 void MessageParser::Pass_exec(std::vector<std::string> &msg_tokens, Client *client)
 {
 	if (msg_tokens.size() < 2)
@@ -183,7 +184,6 @@ void MessageParser::Join_exec(std::vector<std::string> &msg_tokens, Client *clie
 // void MessageParser::Quit_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 // void MessageParser::Part_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 // void MessageParser::Privmsg_exec(std::vector<std::string> &msg_tokens, Client *client) {};
-// void MessageParser::Oper_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 // void MessageParser::Mode_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 // void MessageParser::Topic_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 // void MessageParser::Kick_exec(std::vector<std::string> &msg_tokens, Client *client) {};
@@ -355,3 +355,8 @@ bool MessageParser::parseMessage(std::stringstream &msg, Client *client)
 // handle freeing resources before exit(1) to clean allocated resources
 // should chanel operators be stored together with users or separetely?
 // when user is promoted to oper its entry gets removed from the users list and gets added to the operators
+
+//make function to broacast message like NICK and QUIT to all users of the groups of which
+//the client is part of, however be aware to not send message to same user twice if he is in 2 groups  where user also is!
+	//solution iterate trought the clients known channels and getUsers()
+	//and add them to a set -> in the end the entries in the set are unique so you have all the clients to which you need to send the reply
