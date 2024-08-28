@@ -9,6 +9,7 @@ class Client;
 
 class Channel
 {
+	friend class MessageParser;
 public:
 	Channel(const std::string &name, Client *op);
 	~Channel(void);

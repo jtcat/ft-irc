@@ -5,7 +5,9 @@
 #include "ERR.hpp"
 #include "RPL.hpp"
 
-Server *MessageParser::_server = NULL;
+
+Server* MessageParser::_server = NULL;
+
 std::map<std::string, void (*)(std::vector<std::string> &, Client *)> MessageParser::command_map;
 
 void MessageParser::setServer(Server *server)
@@ -16,8 +18,9 @@ void MessageParser::setServer(Server *server)
 void MessageParser::registerClient(Client *client)
 {
 	client->setRegisteredFlag(1);
+	_server->_client_users.insert(std::make_pair(client->getNick(), client));
 	Server::send(client, RPL_WELCOME(client->getNick(), client->getUser(), client->getHost()));
-	// plus all the other welcome messages
+	//plus all the other welcome messages
 }
 
 void MessageParser::Pass_exec(std::vector<std::string> &msg_tokens, Client *client)
@@ -68,8 +71,10 @@ void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *clie
 	// 	Server::send(client, ERR_ERRONEUSNICKNAME(client->getNick()));
 	else if (client->getRegisteredFlag() == 1)
 	{
-		// send reply to notify users of the nick change
+		//send reply to notify users of the nick change
+		_server->_client_users.erase(client->getNick());
 		client->setNick(msg_tokens[1]);
+		_server->_client_users.insert(std::make_pair(client->getNick(), client));
 	}
 	else
 	{
@@ -78,6 +83,27 @@ void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *clie
 			registerClient(client);
 	}
 }
+
+void MessageParser::Privmsg_exec(std::vector<std::string> &msg_tokens, Client *client) {
+	std::map<std::string, Client*>::iterator	target_client;
+	std::map<std::string, Channel*>::iterator	target_channel;
+
+	for (std::vector<std::string>::iterator target_name = msg_tokens.begin(); target_name < msg_tokens.end() - 1; target_name++) {
+		if ((target_client = _server->_client_users.find(*target_name)) != _server->_client_users.end()) {
+			Server::send(client, ":" + client->getNick() + " " + "PRIVMSG" + " " + target_client->second->getNick() + " " + *(msg_tokens.end() - 1));
+		}
+		else if ((target_channel = _server->_channels.find(*target_name)) != _server->_channels.end()) {
+			Channel *channel = target_channel->second;
+			for (std::set<Client*>::iterator channel_member = channel->_users.begin(); channel_member != channel->_users.end(); channel_member++) {
+				if (*channel_member != client)
+					Server::send(client, ":" + client->getNick() + " " + "PRIVMSG" + " " + target_channel->first + " " + *(msg_tokens.end() - 1));
+			}
+		}
+		else {
+			Server::send(client, *target_name + " :No such nick or channel name");
+		}
+	}
+};
 
 std::vector<std::string> split(const std::string &str, char delimiter)
 {
@@ -221,7 +247,7 @@ void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client
 		command_map["JOIN"] = &MessageParser::Join_exec;
 		// command_map["QUIT"] = &MessageParser::Quit_exec;
 		// command_map["PART"] = &MessageParser::Part_exec; //when a user parts make sure the channel that if this was the last user, the channel is destroyed
-		// command_map["PRIVMSG"] = &MessageParser::Privmsg_exec;
+		command_map["PRIVMSG"] = &MessageParser::Privmsg_exec;
 		// command_map["OPER"] = &MessageParser::Oper_exec;
 		// command_map["MODE"] = &MessageParser::Mode_exec;
 		// command_map["TOPIC"] = &MessageParser::Topic_exec;
@@ -248,6 +274,7 @@ void printVectorWithSpaces(const std::vector<std::string> &vec)
 	}
 	std::cout << std::endl; // Print a newline at the end
 }
+
 void removeUntilCRLF(std::stringstream &msg)
 {
 	char ch;
