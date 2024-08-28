@@ -133,6 +133,7 @@ void handleClientJoinChannel(Client* client,Channel* channel) {
 	channel->broadcastMsg(RPL_JOIN(client->getNick(), client->getUser(), client->getHost(), channel->getName()));
 	// send NAMES REPLY
 	Server::send(client, RPL_NAMREPLY(client->getNick(), channel->getName(), channel->getUsersList()));
+	Server::send(client, RPL_ENDOFNAMES(client->getNick(), channel->getName()));
 }
 
 void MessageParser::Join_exec(std::vector<std::string> &msg_tokens, Client *client)
