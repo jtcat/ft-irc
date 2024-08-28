@@ -5,7 +5,7 @@
 #include "ERR.hpp"
 #include "RPL.hpp"
 
-Server* MessageParser::_server = NULL;
+Server *MessageParser::_server = NULL;
 std::map<std::string, void (*)(std::vector<std::string> &, Client *)> MessageParser::command_map;
 
 void MessageParser::setServer(Server *server)
@@ -16,15 +16,15 @@ void MessageParser::setServer(Server *server)
 void MessageParser::registerClient(Client *client)
 {
 	client->setRegisteredFlag(1);
-	Server::send(client, RPL_WELCOME(client->getNick(), client->getUsername(), client->getIpAddr()));
-	//plus all the other welcome messages
+	Server::send(client, RPL_WELCOME(client->getNick(), client->getUser(), client->getHost()));
+	// plus all the other welcome messages
 }
 void MessageParser::Pass_exec(std::vector<std::string> &msg_tokens, Client *client)
 {
 	if (msg_tokens.size() < 2)
 		Server::send(client, ERR_NEEDMOREPARAMS("PASS", client->getNick()));
 	else if (client->getAuthenticatedFlag() == 1)
-		Server::send(client ,ERR_ALREADYREGISTERED(client->getNick()));
+		Server::send(client, ERR_ALREADYREGISTERED(client->getNick()));
 	else if (msg_tokens[1] != MessageParser::_server->_passwd)
 	{
 		Server::send(client, ERR_PASSWDMISMATCH());
@@ -35,7 +35,7 @@ void MessageParser::Pass_exec(std::vector<std::string> &msg_tokens, Client *clie
 	else
 	{
 		client->setAuthenticatedFlag(1);
-		if (client->getNick() != "*" && !client->getUsername().empty())
+		if (client->getNick() != "*" && !client->getUser().empty())
 			registerClient(client);
 	}
 };
@@ -45,18 +45,19 @@ void MessageParser::User_exec(std::vector<std::string> &msg_tokens, Client *clie
 	// verify USER specific syntax like username len, etc
 	if (msg_tokens.size() < 5)
 		Server::send(client, ERR_NEEDMOREPARAMS("USER", client->getNick()));
-	else if (client->getRegisteredFlag() == 1 || !client->getUsername().empty())
+	else if (client->getRegisteredFlag() == 1 || !client->getUser().empty())
 		Server::send(client, ERR_ALREADYREGISTERED(client->getNick()));
 	else
 	{
-		client->setUsername(msg_tokens[1]);
+		client->setUser(msg_tokens[1]);
 		client->setRealname(msg_tokens[4]);
 		if (client->getNick() != "*" && client->getAuthenticatedFlag() == 1)
 			registerClient(client);
 	}
 };
 
-void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *client) {
+void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *client)
+{
 	// verify NICK specific syntax like username len, etc
 	if (msg_tokens.size() < 2)
 		Server::send(client, ERR_NONICKNAMEGIVEN());
@@ -66,22 +67,25 @@ void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *clie
 	// 	Server::send(client, ERR_ERRONEUSNICKNAME(client->getNick()));
 	else if (client->getRegisteredFlag() == 1)
 	{
-		//send reply to notify users of the nick change
+		// send reply to notify users of the nick change
 		client->setNick(msg_tokens[1]);
 	}
-	else {
+	else
+	{
 		client->setNick(msg_tokens[1]);
-		if (!client->getUsername().empty() && client->getAuthenticatedFlag() == 1)
+		if (!client->getUser().empty() && client->getAuthenticatedFlag() == 1)
 			registerClient(client);
 	}
 }
 
-std::vector<std::string> split(const std::string &str, char delimiter) {
+std::vector<std::string> split(const std::string &str, char delimiter)
+{
 	std::vector<std::string> tokens;
 	std::stringstream ss(str);
 	std::string token;
 
-	while (std::getline(ss, token, delimiter)) {
+	while (std::getline(ss, token, delimiter))
+	{
 		tokens.push_back(token);
 	}
 
@@ -94,63 +98,86 @@ std::map<std::string, std::string> MessageParser::Parse_join_params(std::vector<
 	std::map<std::string, std::string> channels;
 	if (msg_tokens.size() < 2)
 		Server::send(client, ERR_NEEDMOREPARAMS("JOIN", client->getNick()));
-	else {
+	else
+	{
 		std::vector<std::string> names = split(msg_tokens[1], ',');
 		std::vector<std::string> pass;
 		if (msg_tokens.size() >= 3)
 			pass = split(msg_tokens[2], ',');
 		for (std::vector<std::string>::iterator it = names.begin(); it != names.end(); it++)
 		{
-			if (!it->empty() && ((*it)[0] != '&' && (*it)[0] != '#' && (*it)[0] != '+' && (*it)[0] != '!' || (*it).length() > 50))
+			if (!it->empty() && (((*it)[0] != '&' && (*it)[0] != '#' && (*it)[0] != '+' && (*it)[0] != '!') || (*it).length() > 50))
 			{
-				Server::send(client, ERR_BADCHANMASK(*it));
+				Server::send(client, ERR_BADCHANMASK(*it)); // err badchanmask or no such chanel?
 				(*it) = "";
 			}
 		}
 		size_t j = pass.size();
+		// if no pass is provided for a given chan name, fill the map w an empty string
 		for (size_t i = 0; i < names.size(); i++)
-			channels[names[i]] = i <= j ? pass[i] : "";
+		{
+			channels[names[i]] = i < j ? pass[i] : "";
+		}
 	}
 	return channels;
 }
 
-void MessageParser::Join_exec(std::vector<std::string> &msg_tokens, Client *client) {
+void handleClientJoinChannel(Client* client,Channel* channel) {
+	// add channel to client's channel list
+	client->addChannel(channel);
+	// add user to the channel
+	channel->addUser(client);
+	// delete user from the invites list (if applicable)
+	channel->delUserFromInvites(client);
+	// send Join reply
+	channel->broadcastMsg(RPL_JOIN(client->getNick(), client->getUser(), client->getHost(), channel->getName()));
+	// send NAMES REPLY
+	Server::send(client, RPL_NAMREPLY(client->getNick(), channel->getName(), channel->getUsersList()));
+}
+
+void MessageParser::Join_exec(std::vector<std::string> &msg_tokens, Client *client)
+{
 	std::map<std::string, std::string> join_list = Parse_join_params(msg_tokens, client);
 	if (join_list.size() < 1)
-		return ;
+		return; // there was some parsing error
 	for (std::map<std::string, std::string>::iterator it_join_list = join_list.begin(); it_join_list != join_list.end(); it_join_list++)
 	{
+		if (it_join_list->first.empty()) // there was some error while parsing, ignore;
+			continue;
 		std::map<std::string, Channel *>::iterator it_channel = MessageParser::_server->_channels.find(it_join_list->first);
-		//chanel exists?
+		// chanel exists?
 		if (it_channel != MessageParser::_server->_channels.end())
-		{
-			//check if client isn't already a member of that channel and do nothing if so
+		{ // check if client isn't already a member of that channel and do nothing if so
 			if (client->isUserMemberOfChannel(it_channel->first))
-				return ;
-			else if (it_channel->second->getUserLimit() >= it_channel->second->getUsers().size())
+				return;
+			else if (it_channel->second->getUserLimit() >= static_cast<int>(it_channel->second->getUsers().size()))
 				Server::send(client, ERR_CHANNELISFULL(it_channel->first));
 			else if (it_channel->second->getInviteFlag() == 1)
-			{
-				//check if user is part of the invites group of the channel;
+			{ // check if user is part of the invites group of the channel;
 				if (it_channel->second->checkIfUserInvited(client) == 1)
-				{	//add channel to client's channel list
-					//add user to the channel
-					//delete user from the invites list
-					//send Join reply
-				}
+					handleClientJoinChannel(client, it_channel->second);
 				else
 					Server::send(client, ERR_INVITEONLYCHAN(it_channel->first));
 			}
 			else if (!it_channel->second->getPasswd().empty())
 			{
-				// channel is in key mode and check if a password was provided
+				// channel is in key mode
+				if (it_join_list->second == it_channel->second->getPasswd())
+					handleClientJoinChannel(client, it_channel->second);
+				else
+					Server::send(client, ERR_BADCHANNELKEY(it_channel->first));
 			}
 			else
-				//channel not in key mode nor invite-only, simply join
+				handleClientJoinChannel(client, it_channel->second); // channel not in key mode nor invite-only, simply join
+		} else //create channel
+		{
+			// in irc when u create a channel with join and suply a password
+			//is the channel immediately password protected?
+			Channel *new_channel = new Channel(it_join_list->first, client);
+			MessageParser::_server->addChannel(new_channel);
+			handleClientJoinChannel(client, new_channel);
 		}
-		//create channel
 	}
-	//write function to broadcast replies to all members of a chanel;
 };
 // void MessageParser::Quit_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 // void MessageParser::Part_exec(std::vector<std::string> &msg_tokens, Client *client) {};
@@ -182,7 +209,7 @@ void MessageParser::processUnregisteredClient(std::vector<std::string> &msg_toke
 void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client *client)
 {
 	if (msg_tokens.size() == 0)
-		return ;
+		return;
 	std::map<std::string, void (*)(std::vector<std::string> &, Client *)>::iterator it = command_map.find(msg_tokens[0]);
 
 	if (command_map.empty())
@@ -192,7 +219,7 @@ void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client
 		command_map["NICK"] = &MessageParser::Nick_exec;
 		command_map["JOIN"] = &MessageParser::Join_exec;
 		// command_map["QUIT"] = &MessageParser::Quit_exec;
-		// command_map["PART"] = &MessageParser::Part_exec;
+		// command_map["PART"] = &MessageParser::Part_exec; //when a user parts make sure the channel that if this was the last user, the channel is destroyed
 		// command_map["PRIVMSG"] = &MessageParser::Privmsg_exec;
 		// command_map["OPER"] = &MessageParser::Oper_exec;
 		// command_map["MODE"] = &MessageParser::Mode_exec;
@@ -323,7 +350,7 @@ bool MessageParser::parseMessage(std::stringstream &msg, Client *client)
 	return true;
 }
 
-//handle signals
-//handle freeing resources before exit(1) to clean allocated resources
-//should chanel operators be stored together with users or separetely?
-//when user is promoted to oper its entry gets removed from the users list and gets added to the operators
+// handle signals
+// handle freeing resources before exit(1) to clean allocated resources
+// should chanel operators be stored together with users or separetely?
+// when user is promoted to oper its entry gets removed from the users list and gets added to the operators

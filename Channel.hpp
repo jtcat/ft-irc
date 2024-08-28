@@ -24,7 +24,15 @@ public:
 	const std::string &getPasswd() const;
 	int getUserLimit() const;
 	int getInviteFlag() const;
+	void broadcastMsg(const std::string &msg) const;
+	const std::string getUsersList() const;
+	void addOp(Client *client);
+	void addUser(Client *client);
+	void delUserFromInvites(Client *client);
+	void addUserToInvites(Client *client);
 private:
+	Channel &operator=(Channel const &rhs);
+	Channel(Channel const &src);
 	std::string			_name;
 	std::set<Client *> _users;
 	std::set<Client *> _op;
@@ -33,7 +41,5 @@ private:
 	int					_user_limit;
 	int					_invite_Only_flag;
 	Channel(void);
-	Channel &operator=(Channel const &rhs);
-	Channel(Channel const &src);
 };
 

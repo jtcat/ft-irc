@@ -9,7 +9,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-Server::Server(int port, const std::string &passwd) : _poll_i(0), _pfds(), _passwd(passwd),  _fd_count(0)
+Server::Server(int port, const std::string &passwd) : _poll_i(0), _pfds(), _passwd(passwd), _fd_count(0)
 {
 	_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -66,14 +66,15 @@ const Client Server::accept()
 	// std::cout << "ip str in accept = " << ip_str << std::endl;
 	return (Client(newsock_fd, std::string(ip_str)));
 }
-int Server::send(Client *client, const std::string & msg) {
-	const char * msg_c_str = msg.c_str();
+int Server::send(Client *client, const std::string &msg)
+{
+	const char *msg_c_str = msg.c_str();
 	size_t len = strlen(msg_c_str);
 	size_t bytes_sent = 0;
 	size_t total_bytes_sent = 0;
 	while (total_bytes_sent < len)
 	{
-		bytes_sent = ::send(client->getSockFd(), msg_c_str + total_bytes_sent, len - total_bytes_sent , 0);
+		bytes_sent = ::send(client->getSockFd(), msg_c_str + total_bytes_sent, len - total_bytes_sent, 0);
 		if (static_cast<int>(bytes_sent) == -1)
 		{
 			perror("send");
@@ -105,7 +106,7 @@ void Server::registerNewClient()
 {
 
 	Client *new_client = new Client(this->accept());
-	// std::cout << "new Client with ip = " << new_client->getIpAddr() <<" and fd = " << new_client->getSockFd()<< std::endl;
+	// std::cout << "new Client with ip = " << new_client->getHost() <<" and fd = " << new_client->getSockFd()<< std::endl;
 	int new_sock_fd = new_client->getSockFd();
 	_clients[new_sock_fd] = new_client;
 	this->addPollFd(new_sock_fd);
@@ -116,20 +117,9 @@ void Server::closeClientConnection(int client_fd)
 	_clients.erase(client_fd);
 }
 
-// void Server::broadcast(int sender_fd, char *msg, int nbytes)
-// {
-// 	for (size_t i = 0; i < _pfds.size(); i++)
-// 	{
-// 		int dest = _pfds[i].fd;
-// 		if (dest != _sock_fd && dest != sender_fd)
-// 		{
-// 			if (send(dest, msg, nbytes, 0) == -1)
-// 			{
-// 				perror("send");
-// 			}
-// 		}
-// 	}
-// }
+void Server::addChannel(Channel *channel) {
+	_channels[channel->getName()] = channel;
+}
 
 void Server::monitorClients()
 {

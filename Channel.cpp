@@ -1,5 +1,6 @@
 #include "Channel.hpp"
-
+#include "Server.hpp"
+#include <sstream>
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
@@ -8,12 +9,12 @@ Channel::Channel()
 {
 }
 Channel::Channel(const std::string &name, Client *op) : _name(name), _user_limit(-1) , _invite_Only_flag(0) {
-	_op.insert(op);
+	addOp(op);
 };
 
 Channel::Channel( const Channel & src )
 {
-	(void)src;
+	*this = src;
 }
 
 
@@ -31,11 +32,16 @@ Channel::~Channel()
 
 Channel &				Channel::operator=( Channel const & rhs )
 {
-	//if ( this != &rhs )
-	//{
-		//this->_value = rhs.getValue();
-	//}
-	(void)rhs;
+	if ( this != &rhs )
+	{
+		_name = rhs.getName();
+		_users = rhs.getUsers();
+		_op = rhs.getOp();
+		_invites = rhs.getInvites();
+		_passwd = rhs.getPasswd();
+		_user_limit = rhs.getUserLimit();
+		_invite_Only_flag = rhs.getInviteFlag();
+	}
 	return *this;
 }
 
@@ -72,11 +78,6 @@ void Channel::delUser(const std::string &nick)
 	if (op_it != _op.end())
 		_op.erase(op_it);
 }
-bool Channel::checkIfUserInvited(Client *client) {
-	if (_invites.find(client) != _invites.end())
-		return true;
-	return false;
-}
 
 /*
 ** --------------------------------- ACCESSOR ---------------------------------
@@ -109,5 +110,41 @@ int Channel::getInviteFlag() const {
 	return _invite_Only_flag;
 }
 
+bool Channel::checkIfUserInvited(Client *client) {
+	if (_invites.find(client) != _invites.end())
+		return true;
+	return false;
+}
+void Channel::broadcastMsg(const std::string &msg) const {
+
+	for (std::set<Client *>::iterator it = _users.begin(); it != _users.end(); it++)
+		Server::send(*it, msg);
+}
+const std::string Channel::getUsersList() const {
+	std::stringstream ss;
+	for (std::set<Client *>::iterator it = _users.begin(); it != _users.end(); it++)
+	{
+		if (_op.find(*it) != _op.end())
+			ss << "@";
+		ss << (*it)->getNick();
+		std::set<Client *>::iterator next_it = it;
+		if (++next_it != _users.end())
+			ss << " ";
+	}
+	return ss.str();
+}
+void Channel::addUser(Client *client) {
+	_users.insert(client);
+};
+void Channel::addOp(Client *client) {
+	addUser(client);
+	_op.insert(client);
+};
+void Channel::delUserFromInvites(Client *client) {
+	_invites.erase(client);
+};
+void Channel::addUserToInvites(Client *client) {
+	_invites.insert(client);
+};
 /* ************************************************************************** */
 
