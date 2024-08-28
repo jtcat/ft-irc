@@ -14,12 +14,16 @@ public:
 	Client(int sock_fd, std::string ip_addr);
 	Client(Client const &src);
 	~Client(void);
+
 	int getSockFd() const;
 	const std::string &getHost() const;
 	const std::string &getNick() const;
 	const std::string &getUser() const;
 	int getAuthenticatedFlag() const;
 	int getRegisteredFlag() const;
+
+	std::string	getSourceStr(void) const;
+
 	void setAuthenticatedFlag(int flag);
 	void setRegisteredFlag(int flag);
 	void setUser(const std::string &username);

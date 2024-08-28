@@ -93,6 +93,10 @@ const std::map<std::string, Channel *> &Client::getChannels() const
 	return _channels;
 }
 
+std::string	Client::getSourceStr(void) const {
+	return ":" + getNick() + "!~" + getUser() + "@" + getHost();
+}
+
 void Client::setAuthenticatedFlag(int flag)
 {
 	_authenticated = flag;

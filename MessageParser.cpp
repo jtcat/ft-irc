@@ -87,15 +87,15 @@ void MessageParser::Privmsg_exec(std::vector<std::string> &msg_tokens, Client *c
 	std::map<std::string, Client*>::iterator	target_client;
 	std::map<std::string, Channel*>::iterator	target_channel;
 
-	for (std::vector<std::string>::iterator target_name = msg_tokens.begin(); target_name < msg_tokens.end() - 1; target_name++) {
+	for (std::vector<std::string>::iterator target_name = msg_tokens.begin() + 1; target_name < (msg_tokens.end() - 1); target_name++) {
 		if ((target_client = _server->_client_users.find(*target_name)) != _server->_client_users.end()) {
-			Server::send(client, ":" + client->getNick() + " " + "PRIVMSG" + " " + target_client->second->getNick() + " " + *(msg_tokens.end() - 1));
+			Server::send(target_client->second, client->getSourceStr() + " " + "PRIVMSG" + " " + target_client->second->getNick() + " :" + *(msg_tokens.end() - 1) + "\n");
 		}
 		else if ((target_channel = _server->_channels.find(*target_name)) != _server->_channels.end()) {
 			Channel *channel = target_channel->second;
 			for (std::set<Client*>::iterator channel_member = channel->_users.begin(); channel_member != channel->_users.end(); channel_member++) {
 				if (*channel_member != client)
-					Server::send(client, ":" + client->getNick() + " " + "PRIVMSG" + " " + target_channel->first + " " + *(msg_tokens.end() - 1));
+					Server::send(*channel_member, client->getSourceStr() + " " + "PRIVMSG" + " " + target_channel->first + " :" + *(msg_tokens.end() - 1) + "\n");
 			}
 		}
 		else {
