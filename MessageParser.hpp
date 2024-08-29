@@ -30,7 +30,8 @@ class MessageParser
 		static void Privmsg_exec(std::vector<std::string> &msg_tokens, Client *client);
 		static void Who_exec(std::vector<std::string> &msg_tokens, Client *client);
 		// static void Oper_exec(std::vector<std::string> &msg_tokens, Client *client);
-		// static void Mode_exec(std::vector<std::string> &msg_tokens, Client *client);
+		static std::map<std::string, std::string>  Parse_mode_Params(std::vector<std::string> &msg_tokens, Client *client);
+		static void Mode_exec(std::vector<std::string> &msg_tokens, Client *client);
 		// static void Topic_exec(std::vector<std::string> &msg_tokens, Client *client);
 		// static void Kick_exec(std::vector<std::string> &msg_tokens, Client *client);
 		// static void Invite_exec(std::vector<std::string> &msg_tokens, Client *client);

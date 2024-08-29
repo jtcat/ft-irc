@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include <set>
-
+#include <ctime>
 class Client;
 #include "Client.hpp"
 
@@ -23,6 +23,7 @@ public:
 	const std::set<Client *> &getOp() const;
 	const std::set<Client *> &getInvites() const;
 	const std::string &getPasswd() const;
+	const std::time_t &getCreationTime() const;
 	int getUserLimit() const;
 	int getInviteFlag() const;
 	void broadcastMsg(const std::string &msg) const;
@@ -31,6 +32,7 @@ public:
 	void addUser(Client *client);
 	void delUserFromInvites(Client *client);
 	void addUserToInvites(Client *client);
+	bool isUserInChannel(const std::string &nick) const;
 private:
 	Channel &operator=(Channel const &rhs);
 	Channel(Channel const &src);
@@ -41,6 +43,7 @@ private:
 	std::string			_passwd;
 	int					_user_limit;
 	int					_invite_Only_flag;
+	std::time_t			_creation_time;
 	Channel(void);
 };
 

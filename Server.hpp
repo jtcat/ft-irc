@@ -31,7 +31,8 @@ class Server {
 		void registerNewClient();
 		void closeClientConnection(int client_fd);
 		void addChannel(Channel * channel);
-
+		Channel *getChanel(const std::string &channel) const;
+		bool ChannelExists(const std::string &channel) const;
 		//	int read(int client_sock, char* buffer, size_t size);
 	private:
 		const std::string	_name;

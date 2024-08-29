@@ -4,7 +4,8 @@
 #include <iostream>
 #include "ERR.hpp"
 #include "RPL.hpp"
-
+#include <iostream>
+#include <ctime>
 
 Server* MessageParser::_server = NULL;
 
@@ -99,8 +100,8 @@ void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *clie
 	// verify NICK specific syntax like username len, etc
 	if (msg_tokens.size() < 2)
 		Server::send(client, ERR_NONICKNAMEGIVEN());
-	// else if (nick already in use)
-	// 	Server::send(client, ERR_NICKNAMEINUSE(client->getNick()));
+	else if (_server->_client_users.find(msg_tokens[1]) != _server->_client_users.end())
+		Server::send(client, ERR_NICKNAMEINUSE(client->getNick()));
 	// else if (nick name not acoording to syntax)
 	// 	Server::send(client, ERR_ERRONEUSNICKNAME(client->getNick()));
 	else if (client->getRegisteredFlag() == 1)
@@ -255,11 +256,64 @@ void MessageParser::Join_exec(std::vector<std::string> &msg_tokens, Client *clie
 		}
 	}
 };
-// void MessageParser::Quit_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+// void MessageParser::Quit_exec(std::vector<std::string> &msg_tokens, Client *client) {
+// 	//use broadcast messaeg method in clients
+// };
 // void MessageParser::Part_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 // void MessageParser::Privmsg_exec(std::vector<std::string> &msg_tokens, Client *client) {};
-// void MessageParser::Oper_exec(std::vector<std::string> &msg_tokens, Client *client) {};
-// void MessageParser::Mode_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+std::map<std::string, std::string> MessageParser::Parse_mode_Params(std::vector<std::string> &msg_tokens, Client *client) {
+
+	std::map<std::string, std::string> mode_list;
+	char ch;
+	char mode = '+';
+	int mode_param_i = 0;
+	if (msg_tokens.size() < 2)
+		Server::send(client, ERR_NEEDMOREPARAMS("MODE", client->getNick()));
+	else if (MessageParser::_server->ChannelExists(msg_tokens[1]) == 0)
+		Server::send(client, ERR_NOSUCHCHANNEL(msg_tokens[1]));
+	// else if (msg_tokens.size() == 2)
+	// 	//server send mode reply
+	else {
+		std::stringstream ss_modes(msg_tokens[2]);
+		std::vector<std::string> mode_params;
+		if (msg_tokens.size() >= 4)
+			mode_params.insert(mode_params.end(), msg_tokens.begin() + 3, msg_tokens.end());
+		while (ss_modes.get(ch))
+		{
+			if(ch == '+' || ch == '-')
+			{
+				mode = ch;
+				continue ;
+			}
+			std::string mode_str = std::string(1, mode) + std::string(1, ch);
+			if ((mode == '+' && (ch == 'k' || ch == 'o' || ch == 'l')) || (mode == '-' && ch == 'o'))
+			{
+				if (mode_param_i < mode_params.size())
+				{//should I distiguish between ERR_NOSUCHNICK AND ERR_USERNOTINCHANNEL
+					if (ch == 'o' && _server->getChanel(msg_tokens[1])->isUserInChannel(mode_params[mode_param_i]) == false)
+						Server::send(client, ERR_NOSUCHNICK(client->getNick(), mode_params[mode_param_i]));
+					else {
+						mode_list[mode_str] = mode_params[mode_param_i];
+						mode_param_i++;
+					}
+				}
+				else {
+					Server::send(client, ERR_INVALIDMODEPARAM(client->getNick(), msg_tokens[1], mode_str));
+				}
+			}
+			else if (ch == 'i' || ch == 't' || (( ch == 'k' || ch == 'l') && mode == '-'))
+				mode_list[mode_str] = "";
+			else {
+				Server::send(client, ERR_UNKNOWNMODE(client->getNick(), mode_str));
+			}
+		}
+	}
+}
+ void MessageParser::Mode_exec(std::vector<std::string> &msg_tokens, Client *client) {
+	std::map<std::string, std::string> mode_list = Parse_mode_Params(msg_tokens, client);
+	if (mode_list.size() < 1)
+		return;
+};
 // void MessageParser::Topic_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 // void MessageParser::Kick_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 // void MessageParser::Invite_exec(std::vector<std::string> &msg_tokens, Client *client) {
@@ -432,3 +486,8 @@ bool MessageParser::parseMessage(std::stringstream &msg, Client *client)
 // handle freeing resources before exit(1) to clean allocated resources
 // should chanel operators be stored together with users or separetely?
 // when user is promoted to oper its entry gets removed from the users list and gets added to the operators
+
+//make function to broacast message like NICK and QUIT to all users of the groups of which
+//the client is part of, however be aware to not send message to same user twice if he is in 2 groups  where user also is!
+	//solution iterate trought the clients known channels and getUsers()
+	//and add them to a set -> in the end the entries in the set are unique so you have all the clients to which you need to send the reply
