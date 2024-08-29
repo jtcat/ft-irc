@@ -9,7 +9,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-Server::Server(int port, const std::string &passwd) : _poll_i(0), _pfds(), _passwd(passwd), _fd_count(0)
+Server::Server(int port, const std::string &passwd) : _name("ft_irc"), _poll_i(0), _pfds(), _passwd(passwd), _fd_count(0)
 {
 	_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -35,6 +35,10 @@ Server::Server(int port, const std::string &passwd) : _poll_i(0), _pfds(), _pass
 Server::~Server()
 {
 	close(_sock_fd);
+}
+
+const std::string&	Server::getName(void) const {
+	return _name;
 }
 
 void Server::bind()

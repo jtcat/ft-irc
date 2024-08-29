@@ -21,6 +21,7 @@ public:
 	const std::string &getUser() const;
 	int getAuthenticatedFlag() const;
 	int getRegisteredFlag() const;
+	const std::string& getRealName(void) const;
 
 	std::string	getSourceStr(void) const;
 

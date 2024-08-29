@@ -22,6 +22,41 @@ void MessageParser::registerClient(Client *client)
 	Server::send(client, RPL_WELCOME(client->getNick(), client->getUser(), client->getHost()));
 	//plus all the other welcome messages
 }
+
+void MessageParser::Who_exec(std::vector<std::string> &msg_tokens, Client *client) {
+	std::string	mask = msg_tokens.size() == 1 ? "*" : msg_tokens[1];
+	std::string flags = "H";
+	std::map<int, Client *>::iterator				sv_member_iter;
+	std::map<std::string, Client *>::iterator		sv_member_find;
+	std::set<Client *>::iterator					ch_member_iter;
+	std::map<std::string, Channel *>::iterator		channel_iter;
+	Client*		member;
+	Channel*	channel;
+
+	if (mask == "*") {
+		for (sv_member_iter = _server->_clients.begin();
+				sv_member_iter != _server->_clients.end();
+				sv_member_iter++) {
+			member = sv_member_iter->second;
+			Server::send(client, RPL_WHOREPLY(client->getNick(), "*", member->getUser(), member->getHost(), _server->getName(), member->getNick(), flags, "0", member->getRealName()));
+		}
+	}
+	else if ((sv_member_find = _server->_client_users.find(mask)) != _server->_client_users.end()) {
+		member = sv_member_find->second;
+		Server::send(client, RPL_WHOREPLY(client->getNick(), "*", member->getUser(), member->getHost(), _server->getName(), member->getNick(), flags, "0", member->getRealName()));
+	}
+	else if ((channel_iter = _server->_channels.find(mask)) != _server->_channels.end()) {
+		channel = channel_iter->second;
+		for (ch_member_iter = channel->_users.begin();
+				ch_member_iter != channel->_users.end();
+				ch_member_iter++) {
+			member = *ch_member_iter;
+			Server::send(client, RPL_WHOREPLY(client->getNick(), mask, member->getUser(), member->getHost(), _server->getName(), member->getNick(), flags, "0", member->getRealName()));
+		}
+	}
+	Server::send(client, RPL_ENDOFWHO(client->getNick(), mask));
+}
+
 void MessageParser::Pass_exec(std::vector<std::string> &msg_tokens, Client *client)
 {
 	if (msg_tokens.size() < 2)
@@ -87,19 +122,33 @@ void MessageParser::Privmsg_exec(std::vector<std::string> &msg_tokens, Client *c
 	std::map<std::string, Client*>::iterator	target_client;
 	std::map<std::string, Channel*>::iterator	target_channel;
 
+	if (msg_tokens.size() == 1) {
+		Server::send(client, ERR_NORECIPIENT(client->getNick(), msg_tokens[0]));
+		return;
+	}
+	else if (msg_tokens.size() == 2) {
+		Server::send(client, ERR_NOTEXTTOSEND(client->getNick()));
+		return;
+	}
+
 	for (std::vector<std::string>::iterator target_name = msg_tokens.begin() + 1; target_name < (msg_tokens.end() - 1); target_name++) {
 		if ((target_client = _server->_client_users.find(*target_name)) != _server->_client_users.end()) {
 			Server::send(target_client->second, client->getSourceStr() + " " + "PRIVMSG" + " " + target_client->second->getNick() + " :" + *(msg_tokens.end() - 1) + "\n");
 		}
 		else if ((target_channel = _server->_channels.find(*target_name)) != _server->_channels.end()) {
 			Channel *channel = target_channel->second;
-			for (std::set<Client*>::iterator channel_member = channel->_users.begin(); channel_member != channel->_users.end(); channel_member++) {
-				if (*channel_member != client)
-					Server::send(*channel_member, client->getSourceStr() + " " + "PRIVMSG" + " " + target_channel->first + " :" + *(msg_tokens.end() - 1) + "\n");
+			if (client->isUserMemberOfChannel(channel->getName())) {
+				for (std::set<Client*>::iterator channel_member = channel->_users.begin(); channel_member != channel->_users.end(); channel_member++) {
+					if (*channel_member != client)
+						Server::send(*channel_member, client->getSourceStr() + " " + "PRIVMSG" + " " + target_channel->first + " :" + *(msg_tokens.end() - 1) + "\n");
+				}
+			}
+			else {
+				Server::send(client, ERR_CANNOTSENDTOCHAN(client->getNick(), *target_name));
 			}
 		}
 		else {
-			Server::send(client, *target_name + " :No such nick or channel name");
+			Server::send(client, ERR_NOSUCHNICK(client->getNick(), *target_name));
 		}
 	}
 };
@@ -248,6 +297,7 @@ void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client
 		// command_map["QUIT"] = &MessageParser::Quit_exec;
 		// command_map["PART"] = &MessageParser::Part_exec; //when a user parts make sure the channel that if this was the last user, the channel is destroyed
 		command_map["PRIVMSG"] = &MessageParser::Privmsg_exec;
+		command_map["WHO"] = &MessageParser::Who_exec;
 		// command_map["OPER"] = &MessageParser::Oper_exec;
 		// command_map["MODE"] = &MessageParser::Mode_exec;
 		// command_map["TOPIC"] = &MessageParser::Topic_exec;

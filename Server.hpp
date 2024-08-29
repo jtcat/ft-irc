@@ -23,6 +23,7 @@ class Server {
 		void listen(int n);
 		const Client accept(void);
 		int getSockFd(void);
+		const std::string&	getName(void) const;
 		static int send(Client *client, const std::string &msg);
 		void monitorClients(void);
 		void addPollFd(int client_fd);
@@ -33,6 +34,7 @@ class Server {
 
 		//	int read(int client_sock, char* buffer, size_t size);
 	private:
+		const std::string	_name;
 		size_t _poll_i;
 		int _sock_fd;
 		struct sockaddr_in _serv_addr;

@@ -6,6 +6,13 @@
 #define ERR_NEEDMOREPARAMS(command, nick) (":ft_irc 461 " + nick + " " + command + " :Not enough parameters" + "\n")
 #define ERR_ALREADYREGISTERED(nick) (":ft_irc 462 " + nick + " :Connection already registered\n")
 #define ERR_PASSWDMISMATCH() (":ft_irc 464 * :Password Mismatch\n")
+
+// PRIVMSG
+#define ERR_NOSUCHNICK(client, target) (":ft_irc 401 " + client + " " + target + " :No such nick or channel name\n")
+#define ERR_CANNOTSENDTOCHAN(client, channel) (":ft_irc 404 " + client + " " + channel + " :Cannot send to channel\n")
+#define ERR_NORECIPIENT(client, cmd) (":ft_irc 411 " + client + " :No recipient given (" + cmd +")\n")
+#define ERR_NOTEXTTOSEND(client) (":ft_irc 412 " + client + " :No text to send\n")
+
 #define ERR_NONICKNAMEGIVEN() (":ft_irc 431 * :No nickname given\n")
 #define ERR_ERRONEUSNICKNAME(nick) (":ft_irc 432 " + nick +" :Erroneous nickname\n")
 #define ERR_NICKNAMEINUSE(nick) (":ft_irc 433 " + nick + " :Nickname is already in use\n")

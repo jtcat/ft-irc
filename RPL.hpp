@@ -6,4 +6,9 @@
 #define RPL_NAMREPLY(nick, channel, users) (":ft_irc 353 " + nick + " = " + channel + " :" + users + "\n")
 #define RPL_ENDOFNAMES(nick, channel) (":ft_irc 366 " + nick + " " + channel + " " + ":End of NAMES list\n")
 
+//WHO
+#define RPL_WHOREPLY(client, channel, username, host, server, nick, flags, hopcount, realname) \
+	(":ft_irc 352 " + client + " " + channel + " " + username +  " " + host + " " + server + " " + nick + " " + flags + " :" + hopcount + " " + realname + "\n")
+#define RPL_ENDOFWHO(nick, mask) (nick + " " + mask + " :End of WHO list\n")
+
 #endif

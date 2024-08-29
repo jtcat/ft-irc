@@ -101,22 +101,31 @@ void Client::setAuthenticatedFlag(int flag)
 {
 	_authenticated = flag;
 };
+
 void Client::setRegisteredFlag(int flag)
 {
 	_registered = flag;
 };
+
 void Client::setUser(const std::string &username)
 {
 	_user = username;
 };
+
 void Client::setNick(const std::string &nick)
 {
 	_nick = nick;
 };
+
 void Client::setRealname(const std::string &realname)
 {
 	_realname = realname;
 };
+
+const std::string&	Client::getRealName(void) const {
+	return _realname;
+}
+
 std::ostream &operator<<(std::ostream &os, const Client &client)
 {
 	os << "Nick: " << client._nick << "\n"
