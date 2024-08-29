@@ -105,7 +105,6 @@ void Server::delPollFd()
 void Server::registerNewClient()
 {
 	Client *new_client = new Client(this->accept());
-	// std::cout << "new Client with ip = " << new_client->getHost() <<" and fd = " << new_client->getSockFd()<< std::endl;
 	int new_sock_fd = new_client->getSockFd();
 	_clients[new_sock_fd] = new_client;
 	_client_users.insert(std::make_pair(new_client->getNick(), new_client));
@@ -120,6 +119,18 @@ void Server::closeClientConnection(int client_fd)
 
 void Server::addChannel(Channel *channel) {
 	_channels[channel->getName()] = channel;
+}
+
+bool Server::ChannelExists(const std::string &channel) const {
+	if (_channels.find(channel) != _channels.end())
+		return true;
+	return false;
+}
+Channel *Server::getChanel(const std::string &channel) const {
+	std::map<std::string, Channel *>::const_iterator  it = _channels.find(channel);
+	if (it != _channels.end())
+		return it->second;
+	return NULL;
 }
 
 void Server::monitorClients()

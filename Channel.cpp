@@ -8,7 +8,7 @@
 Channel::Channel()
 {
 }
-Channel::Channel(const std::string &name, Client *op) : _name(name), _user_limit(-1) , _invite_Only_flag(0) {
+Channel::Channel(const std::string &name, Client *op) : _name(name), _user_limit(-1) , _invite_Only_flag(0), _creation_time(std::time(0)) {
 	addOp(op);
 };
 
@@ -109,6 +109,9 @@ int Channel::getUserLimit() const {
 int Channel::getInviteFlag() const {
 	return _invite_Only_flag;
 }
+const time_t &Channel::getCreationTime() const {
+	return _creation_time;
+}
 
 bool Channel::checkIfUserInvited(Client *client) {
 	if (_invites.find(client) != _invites.end())
@@ -146,5 +149,12 @@ void Channel::delUserFromInvites(Client *client) {
 void Channel::addUserToInvites(Client *client) {
 	_invites.insert(client);
 };
+bool Channel::isUserInChannel(const std::string &nick) const
+{
+	if (getUserbyNick(nick) != _users.end())
+		return true;
+	return false;
+}
+
 /* ************************************************************************** */
 

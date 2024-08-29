@@ -3,6 +3,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include "Server.hpp"
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
@@ -132,4 +133,15 @@ bool Client::isUserMemberOfChannel(const std::string &channel) const
 		return true;
 	return false;
 };
+void Client::broadcastMsg(const std::string &msg) const {
+	std::set<Client *> known_users;
+	for (std::map<std::string, Channel *>::const_iterator it = _channels.begin(); it != _channels.end(); it++)
+	{
+		const std::set<Client *> &new_users = it->second->getUsers();
+		known_users.insert(new_users.begin(), new_users.end());
+	}
+	for (std::set<Client *>::iterator it = known_users.begin(); it != known_users.end(); it++)
+		Server::send(*it, msg);
+}
+
 /* ************************************************************************** */
