@@ -24,15 +24,24 @@ public:
 	const std::set<Client *> &getInvites() const;
 	const std::string &getPasswd() const;
 	const std::time_t &getCreationTime() const;
+	int getTopicRestrictionFlag() const;
 	int getUserLimit() const;
 	int getInviteFlag() const;
+	void setTopicRestrictionFlag(int flag);
+	void setUserLimit(int limit);
+	void setInviteFlag(int flag);
+	void setPasswd(const std::string &passwd);
 	void broadcastMsg(const std::string &msg) const;
 	const std::string getUsersList() const;
 	void addOp(Client *client);
+	void addOp(const std::string &nick);
+	void delOp(const std::string &nick);
 	void addUser(Client *client);
 	void delUserFromInvites(Client *client);
 	void addUserToInvites(Client *client);
 	bool isUserInChannel(const std::string &nick) const;
+	bool isUserOp(const std::string &nick) const;
+	bool isUserOp(Client *client);
 private:
 	Channel &operator=(Channel const &rhs);
 	Channel(Channel const &src);
@@ -44,6 +53,7 @@ private:
 	int					_user_limit;
 	int					_invite_Only_flag;
 	std::time_t			_creation_time;
+	int					_topic_restriction;
 	Channel(void);
 };
 
