@@ -181,7 +181,7 @@ void MessageParser::Join_exec(std::vector<std::string> &msg_tokens, Client *clie
 		{ // check if client isn't already a member of that channel and do nothing if so
 			if (client->isUserMemberOfChannel(it_channel->first))
 				return;
-			else if (it_channel->second->getUserLimit() > 0 && it_channel->second->getUserLimit() >= static_cast<int>(it_channel->second->getUsers().size()))
+			if (it_channel->second->getUserLimit() > 0 && static_cast<int>(it_channel->second->getUsers().size()) >= it_channel->second->getUserLimit())
 				Server::send(client, ERR_CHANNELISFULL(it_channel->first));
 			else if (it_channel->second->getInviteFlag() == 1)
 			{ // check if user is part of the invites group of the channel;
@@ -354,7 +354,7 @@ std::vector<std::pair<std::string, std::string> > MessageParser::Parse_mode_Para
 			if (!iss.fail() && iss.eof() && num <= static_cast<unsigned int>(std::numeric_limits<int>::max()) && num > 0)
 			{
 				channel->setUserLimit(static_cast<int>(num));
-				// std::cout << "new user limit = " << channel->getUserLimit() << std::endl;
+				std::cout << "new user limit = " << channel->getUserLimit() << std::endl;
 				mode_changes.first += it->first;
 				mode_changes.second += (" " + it->second);
 			}
