@@ -79,6 +79,10 @@ void Channel::delUser(const std::string &nick)
 		_op.erase(op_it);
 }
 
+void Channel::clearInvitesList() {
+	_invites.clear();
+}
+
 /*
 ** --------------------------------- ACCESSOR ---------------------------------
 */

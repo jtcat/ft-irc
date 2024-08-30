@@ -9,7 +9,7 @@
 #include <vector>
 #include <queue>
 #include <limits>
-Server* MessageParser::_server = NULL;
+Server *MessageParser::_server = NULL;
 
 std::map<std::string, void (*)(std::vector<std::string> &, Client *)> MessageParser::command_map;
 
@@ -23,7 +23,7 @@ void MessageParser::registerClient(Client *client)
 	client->setRegisteredFlag(1);
 	_server->_client_users.insert(std::make_pair(client->getNick(), client));
 	Server::send(client, RPL_WELCOME(client->getNick(), client->getUser(), client->getHost()));
-	//plus all the other welcome messages
+	// plus all the other welcome messages
 }
 
 void MessageParser::Pass_exec(std::vector<std::string> &msg_tokens, Client *client)
@@ -74,7 +74,7 @@ void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *clie
 	// 	Server::send(client, ERR_ERRONEUSNICKNAME(client->getNick()));
 	else if (client->getRegisteredFlag() == 1)
 	{
-		//send reply to notify users of the nick change
+		// send reply to notify users of the nick change
 		_server->_client_users.erase(client->getNick());
 		client->setNick(msg_tokens[1]);
 		_server->_client_users.insert(std::make_pair(client->getNick(), client));
@@ -87,22 +87,28 @@ void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *clie
 	}
 }
 
-void MessageParser::Privmsg_exec(std::vector<std::string> &msg_tokens, Client *client) {
-	std::map<std::string, Client*>::iterator	target_client;
-	std::map<std::string, Channel*>::iterator	target_channel;
+void MessageParser::Privmsg_exec(std::vector<std::string> &msg_tokens, Client *client)
+{
+	std::map<std::string, Client *>::iterator target_client;
+	std::map<std::string, Channel *>::iterator target_channel;
 
-	for (std::vector<std::string>::iterator target_name = msg_tokens.begin(); target_name < msg_tokens.end() - 1; target_name++) {
-		if ((target_client = _server->_client_users.find(*target_name)) != _server->_client_users.end()) {
+	for (std::vector<std::string>::iterator target_name = msg_tokens.begin(); target_name < msg_tokens.end() - 1; target_name++)
+	{
+		if ((target_client = _server->_client_users.find(*target_name)) != _server->_client_users.end())
+		{
 			Server::send(client, ":" + client->getNick() + " " + "PRIVMSG" + " " + target_client->second->getNick() + " " + *(msg_tokens.end() - 1));
 		}
-		else if ((target_channel = _server->_channels.find(*target_name)) != _server->_channels.end()) {
+		else if ((target_channel = _server->_channels.find(*target_name)) != _server->_channels.end())
+		{
 			Channel *channel = target_channel->second;
-			for (std::set<Client*>::iterator channel_member = channel->_users.begin(); channel_member != channel->_users.end(); channel_member++) {
+			for (std::set<Client *>::iterator channel_member = channel->_users.begin(); channel_member != channel->_users.end(); channel_member++)
+			{
 				if (*channel_member != client)
 					Server::send(client, ":" + client->getNick() + " " + "PRIVMSG" + " " + target_channel->first + " " + *(msg_tokens.end() - 1));
 			}
 		}
-		else {
+		else
+		{
 			Server::send(client, *target_name + " :No such nick or channel name");
 		}
 	}
@@ -152,7 +158,8 @@ std::map<std::string, std::string> MessageParser::Parse_join_params(std::vector<
 	return channels;
 }
 
-void handleClientJoinChannel(Client* client,Channel* channel) {
+void handleClientJoinChannel(Client *client, Channel *channel)
+{
 	// add channel to client's channel list
 	client->addChannel(channel);
 	// add user to the channel
@@ -200,10 +207,11 @@ void MessageParser::Join_exec(std::vector<std::string> &msg_tokens, Client *clie
 			}
 			else
 				handleClientJoinChannel(client, it_channel->second); // channel not in key mode nor invite-only, simply join
-		} else //create channel
+		}
+		else // create channel
 		{
 			// in irc when u create a channel with join and suply a password
-			//is the channel immediately password protected?
+			// is the channel immediately password protected?
 			Channel *new_channel = new Channel(it_join_list->first, client);
 			MessageParser::_server->addChannel(new_channel);
 			handleClientJoinChannel(client, new_channel);
@@ -216,20 +224,47 @@ void MessageParser::Join_exec(std::vector<std::string> &msg_tokens, Client *clie
 // void MessageParser::Part_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 // void MessageParser::Privmsg_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 
-std::vector<std::pair<std::string, std::string> > MessageParser::Parse_mode_Params(std::vector<std::string> &msg_tokens, Client *client) {
+void MessageParser::Process_Mode_RPL(Client *client, const std::string &channel_name)
+{
+	std::pair<std::string, std::string> modes("+", "");
+	Channel *channel = _server->getChannel(channel_name);
+	if (channel->getInviteFlag() == 1)
+		modes.first += "i";
+	if (!channel->getPasswd().empty())
+	{
+		modes.first += "k";
+		modes.second += (" " + channel->getPasswd());
+	}
+	if (channel->getUserLimit() > 0)
+	{
+		modes.first += "l";
+		std::stringstream ss;
+		ss << channel->getUserLimit();
+		modes.second += (" " + ss.str());
+	}
+	if (channel->getTopicRestrictionFlag() == 1)
+		modes.first += "t";
+	std::stringstream ss;
+	ss << channel->getCreationTime();
+	Server::send(client, RPL_CHANNELMODEIS(client->getNick(), channel->getName(), modes.first + modes.second));
+	Server::send(client, RPL_CREATIONTIME(client->getNick(), channel->getName(), ss.str()));
+}
+std::vector<std::pair<std::string, std::string> > MessageParser::Parse_mode_Params(std::vector<std::string> &msg_tokens, Client *client)
+{
 
 	std::vector<std::pair<std::string, std::string> > mode_list;
 	char ch;
 	char mode = '+';
 	if (msg_tokens.size() < 2)
 		Server::send(client, ERR_NEEDMOREPARAMS("MODE", client->getNick()));
-	else if (MessageParser::_server->ChannelExists(msg_tokens[1]) == 0) //verify that user is on the channel
+	else if (MessageParser::_server->ChannelExists(msg_tokens[1]) == 0)
 		Server::send(client, ERR_NOSUCHCHANNEL(msg_tokens[1]));
 	else if (client->isUserMemberOfChannel(msg_tokens[1]) == false)
 		Server::send(client, ERR_NOTONCHANNEL(client->getNick(), msg_tokens[1]));
-	// else if (msg_tokens.size() == 2)
-	// 	//server send mode reply
-	else {
+	else if (msg_tokens.size() == 2)
+		Process_Mode_RPL(client, msg_tokens[1]);
+	else
+	{
 		std::stringstream ss_modes(msg_tokens[2]);
 		std::queue<std::string> mode_params;
 		if (msg_tokens.size() >= 4)
@@ -239,47 +274,50 @@ std::vector<std::pair<std::string, std::string> > MessageParser::Parse_mode_Para
 		}
 		while (ss_modes.get(ch))
 		{
-			if(ch == '+' || ch == '-')
+			if (ch == '+' || ch == '-')
 			{
 				mode = ch;
-				continue ;
+				continue;
 			}
 			std::string mode_str = std::string(1, mode) + std::string(1, ch);
 			if ((mode == '+' && (ch == 'k' || ch == 'o' || ch == 'l')) || (mode == '-' && ch == 'o'))
 			{
 				if (!mode_params.empty())
-				{//should I distiguish between ERR_NOSUCHNICK AND ERR_USERNOTINCHANNEL
-					if (ch == 'o' && _server->getChanel(msg_tokens[1])->isUserInChannel(mode_params.front()) == false)
+				{ // should I distiguish between ERR_NOSUCHNICK AND ERR_USERNOTINCHANNEL
+					if (ch == 'o' && _server->getChannel(msg_tokens[1])->isUserInChannel(mode_params.front()) == false)
 						Server::send(client, ERR_NOSUCHNICK(client->getNick(), mode_params.front()));
 					else
 						mode_list.push_back(std::make_pair(mode_str, mode_params.front()));
 					mode_params.pop();
 				}
-				else {
+				else
+				{
 					Server::send(client, ERR_INVALIDMODEPARAM(client->getNick(), msg_tokens[1], mode_str));
 				}
 			}
-			else if (ch == 'i' || ch == 't' || (( ch == 'k' || ch == 'l') && mode == '-'))
+			else if (ch == 'i' || ch == 't' || ((ch == 'k' || ch == 'l') && mode == '-'))
 				mode_list.push_back(std::make_pair(mode_str, ""));
-			else {
+			else
+			{
 				Server::send(client, ERR_UNKNOWNMODE(client->getNick(), mode_str));
 			}
 		}
 	}
 	return mode_list;
 }
- void MessageParser::Mode_exec(std::vector<std::string> &msg_tokens, Client *client) {
+void MessageParser::Mode_exec(std::vector<std::string> &msg_tokens, Client *client)
+{
 	std::vector<std::pair<std::string, std::string> > mode_list = Parse_mode_Params(msg_tokens, client);
 	std::pair<std::string, std::string> mode_changes;
 	if (mode_list.size() < 1)
 		return;
-	Channel * channel = _server->getChanel(msg_tokens[1]);
+	Channel *channel = _server->getChannel(msg_tokens[1]);
 	for (std::vector<std::pair<std::string, std::string> >::iterator it = mode_list.begin(); it != mode_list.end(); it++)
 	{
 		if (!channel->isUserOp(client))
 		{
 			Server::send(client, ERR_CHANOPRIVSNEEDED(client->getNick(), channel->getName()));
-			continue ;
+			continue;
 		}
 		else if (it->first == "+i")
 		{
@@ -295,7 +333,7 @@ std::vector<std::pair<std::string, std::string> > MessageParser::Parse_mode_Para
 			{
 				channel->setInviteFlag(0);
 				mode_changes.first += it->first;
-				//clear invites list
+				channel->clearInvitesList();
 			}
 		}
 		else if (it->first == "+t")
@@ -354,7 +392,6 @@ std::vector<std::pair<std::string, std::string> > MessageParser::Parse_mode_Para
 			if (!iss.fail() && iss.eof() && num <= static_cast<unsigned int>(std::numeric_limits<int>::max()) && num > 0)
 			{
 				channel->setUserLimit(static_cast<int>(num));
-				std::cout << "new user limit = " << channel->getUserLimit() << std::endl;
 				mode_changes.first += it->first;
 				mode_changes.second += (" " + it->second);
 			}
@@ -543,7 +580,7 @@ bool MessageParser::parseMessage(std::stringstream &msg, Client *client)
 // should chanel operators be stored together with users or separetely?
 // when user is promoted to oper its entry gets removed from the users list and gets added to the operators
 
-//make function to broacast message like NICK and QUIT to all users of the groups of which
-//the client is part of, however be aware to not send message to same user twice if he is in 2 groups  where user also is!
-	//solution iterate trought the clients known channels and getUsers()
-	//and add them to a set -> in the end the entries in the set are unique so you have all the clients to which you need to send the reply
+// make function to broacast message like NICK and QUIT to all users of the groups of which
+// the client is part of, however be aware to not send message to same user twice if he is in 2 groups  where user also is!
+// solution iterate trought the clients known channels and getUsers()
+// and add them to a set -> in the end the entries in the set are unique so you have all the clients to which you need to send the reply

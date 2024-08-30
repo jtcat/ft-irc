@@ -67,7 +67,8 @@ const Client Server::accept()
 	return (Client(newsock_fd, std::string(ip_str)));
 }
 
-int Server::send(Client *client, const std::string & msg) {
+int Server::send(Client *client, const std::string &msg)
+{
 	const char *msg_c_str = msg.c_str();
 	size_t len = strlen(msg_c_str);
 	size_t bytes_sent = 0;
@@ -117,17 +118,20 @@ void Server::closeClientConnection(int client_fd)
 	_clients.erase(client_fd);
 }
 
-void Server::addChannel(Channel *channel) {
+void Server::addChannel(Channel *channel)
+{
 	_channels[channel->getName()] = channel;
 }
 
-bool Server::ChannelExists(const std::string &channel) const {
+bool Server::ChannelExists(const std::string &channel) const
+{
 	if (_channels.find(channel) != _channels.end())
 		return true;
 	return false;
 }
-Channel *Server::getChanel(const std::string &channel) const {
-	std::map<std::string, Channel *>::const_iterator  it = _channels.find(channel);
+Channel *Server::getChannel(const std::string &channel) const
+{
+	std::map<std::string, Channel *>::const_iterator it = _channels.find(channel);
 	if (it != _channels.end())
 		return it->second;
 	return NULL;

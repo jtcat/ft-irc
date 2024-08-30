@@ -30,6 +30,7 @@ class MessageParser
 		static void Privmsg_exec(std::vector<std::string> &msg_tokens, Client *client);
 		// static void Oper_exec(std::vector<std::string> &msg_tokens, Client *client);
 		static std::vector<std::pair<std::string, std::string> > Parse_mode_Params(std::vector<std::string> &msg_tokens, Client *client);
+		static void Process_Mode_RPL(Client *client, const std::string &channel);
 		static void Mode_exec(std::vector<std::string> &msg_tokens, Client *client);
 		// static void Topic_exec(std::vector<std::string> &msg_tokens, Client *client);
 		// static void Kick_exec(std::vector<std::string> &msg_tokens, Client *client);

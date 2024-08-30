@@ -38,6 +38,7 @@ public:
 	void delOp(const std::string &nick);
 	void addUser(Client *client);
 	void delUserFromInvites(Client *client);
+	void clearInvitesList();
 	void addUserToInvites(Client *client);
 	bool isUserInChannel(const std::string &nick) const;
 	bool isUserOp(const std::string &nick) const;
