@@ -75,9 +75,11 @@ void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *clie
 	else if (client->getRegisteredFlag() == 1)
 	{
 		// send reply to notify users of the nick change
+		client->broadcastMsg(":" + client->getNick() +"!~" + client->getUser() + "@" + client->getHost() + " NICK :" + msg_tokens[1] + "\n");
 		_server->_client_users.erase(client->getNick());
 		client->setNick(msg_tokens[1]);
 		_server->_client_users.insert(std::make_pair(client->getNick(), client));
+
 	}
 	else
 	{
@@ -121,10 +123,7 @@ std::vector<std::string> split(const std::string &str, char delimiter)
 	std::string token;
 
 	while (std::getline(ss, token, delimiter))
-	{
 		tokens.push_back(token);
-	}
-
 	return tokens;
 }
 
