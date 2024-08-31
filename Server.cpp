@@ -4,12 +4,19 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 #include "MessageParser.hpp"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-Server::Server(int port, const std::string &passwd) : _name("ft_irc"), _poll_i(0), _pfds(), _passwd(passwd), _fd_count(0)
+static std::string	calcCreateDate(void) {
+	const time_t	t = time(NULL);
+
+	return ctime(&t);
+}
+
+Server::Server(int port, const std::string &passwd) : _name("ft_irc"), _motd(SERVER_MOTD), _create_date(calcCreateDate()), _poll_i(0), _pfds(), _passwd(passwd), _fd_count(0)
 {
 	_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -35,6 +42,14 @@ Server::Server(int port, const std::string &passwd) : _name("ft_irc"), _poll_i(0
 Server::~Server()
 {
 	close(_sock_fd);
+}
+
+const std::string&	Server::getCreateDate(void) const {
+	return _create_date;
+}
+
+const std::string&	Server::getMOTD(void) const {
+	return _motd;
 }
 
 const std::string&	Server::getName(void) const {

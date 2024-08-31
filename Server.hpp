@@ -13,6 +13,8 @@
 #include "Channel.hpp"
 #include "Client.hpp"
 
+#define SERVER_MOTD "	<<< Welcome to the FT_IRC server! >>> \n"
+
 class Server {
 	public:
 		friend class MessageParser;
@@ -22,9 +24,14 @@ class Server {
 		void bind(void);
 		void listen(int n);
 		const Client accept(void);
-		int getSockFd(void);
+
+		int					getSockFd(void);
+		const std::string&	getMOTD(void) const;
 		const std::string&	getName(void) const;
+		const std::string&	getCreateDate(void) const;
+
 		static int send(Client *client, const std::string &msg);
+
 		void monitorClients(void);
 		void addPollFd(int client_fd);
 		void delPollFd();
@@ -36,6 +43,8 @@ class Server {
 		//	int read(int client_sock, char* buffer, size_t size);
 	private:
 		const std::string	_name;
+		const std::string	_motd;
+		const std::string	_create_date;
 		size_t _poll_i;
 		int _sock_fd;
 		struct sockaddr_in _serv_addr;

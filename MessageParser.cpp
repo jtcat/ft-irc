@@ -7,6 +7,8 @@
 #include <iostream>
 #include <ctime>
 
+#define SERVER_VERSION "1.0"
+
 Server* MessageParser::_server = NULL;
 
 std::map<std::string, void (*)(std::vector<std::string> &, Client *)> MessageParser::command_map;
@@ -18,10 +20,32 @@ void MessageParser::setServer(Server *server)
 
 void MessageParser::registerClient(Client *client)
 {
+	std::vector<std::string>	motd_params;
+
 	client->setRegisteredFlag(1);
 	_server->_client_users.insert(std::make_pair(client->getNick(), client));
 	Server::send(client, RPL_WELCOME(client->getNick(), client->getUser(), client->getHost()));
+	Server::send(client, RPL_YOURHOST(client->getNick(), _server->getName(), SERVER_VERSION));
+	Server::send(client, RPL_CREATED(client->getNick(), _server->getCreateDate()));
+	Server::send(client, RPL_MYINFO(client->getNick(), _server->getName(), SERVER_VERSION, "", "itkl"));
+	Server::send(client, RPL_ISUPPORT(client->getNick()));
+	MOTD_exec(motd_params, client);
 	//plus all the other welcome messages
+}
+
+void MessageParser::MOTD_exec(std::vector<std::string> &msg_tokens, Client *client) {
+	(void)msg_tokens;
+
+	Server::send(client, RPL_MOTDSTART(client->getNick(), _server->getName()));
+
+	std::stringstream	ss(_server->getMOTD());
+	std::string			line;
+
+	while (std::getline(ss, line, '\n')) {
+		Server::send(client, RPL_MOTD(client->getNick(), line));
+	}
+
+	Server::send(client, RPL_ENDOFMOTD(client->getNick()));
 }
 
 void MessageParser::Who_exec(std::vector<std::string> &msg_tokens, Client *client) {
@@ -141,7 +165,7 @@ void MessageParser::Privmsg_exec(std::vector<std::string> &msg_tokens, Client *c
 			if (client->isUserMemberOfChannel(channel->getName())) {
 				for (std::set<Client*>::iterator channel_member = channel->_users.begin(); channel_member != channel->_users.end(); channel_member++) {
 					if (*channel_member != client)
-						Server::send(*channel_member, client->getSourceStr() + " " + "PRIVMSG" + " " + target_channel->first + " :" + *(msg_tokens.end() - 1) + "\n");
+						Server::send(*channel_member, ":" + client->getNick() + "!" + client->getUser()  + "@" + client->getHost() + " " + "PRIVMSG" + " " + target_channel->first + " :" + *(msg_tokens.end() - 1) + "\n");
 				}
 			}
 			else {

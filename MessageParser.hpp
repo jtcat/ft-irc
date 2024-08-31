@@ -19,6 +19,7 @@ class MessageParser
 		static void processUnregisteredClient(std::vector<std::string> &msg_tokens, Client *client);
 		static void execute_command(std::vector<std::string> &msg_token, Client *client);
 
+		static void MOTD_exec(std::vector<std::string> &msg_tokens, Client *client);
 		static void Pass_exec(std::vector<std::string> &msg_tokens, Client *client);
 		static void User_exec(std::vector<std::string> &msg_tokens, Client *client);
 		static void Nick_exec(std::vector<std::string> &msg_tokens, Client *client);
