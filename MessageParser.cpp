@@ -75,7 +75,7 @@ void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *clie
 	else if (client->getRegisteredFlag() == 1)
 	{
 		// send reply to notify users of the nick change
-		client->broadcastMsg(":" + client->getNick() + "!~" + client->getUser() + "@" + client->getHost() + " NICK :" + msg_tokens[1] + "\n");
+		client->broadcastMsg(":" + client->getNick() + "!~" + client->getUser() + "@" + client->getHost() + " NICK :" + msg_tokens[1] + "\n", true);
 		_server->_client_users.erase(client->getNick());
 		client->setNick(msg_tokens[1]);
 		_server->_client_users.insert(std::make_pair(client->getNick(), client));
@@ -221,12 +221,12 @@ void MessageParser::Quit_exec(std::vector<std::string> &msg_tokens, Client *clie
 	if (msg_tokens.size() > 1)
 	{
 		Server::send(client, ERROR_QUIT(msg_tokens[1]));
-		client->broadcastMsg(":" + client->getNick() + "!~" + client->getUser() + "@" + client->getHost() + " QUIT : Quit: " + msg_tokens[1] + "\n");
+		client->broadcastMsg(":" + client->getNick() + "!~" + client->getUser() + "@" + client->getHost() + " QUIT : Quit: " + msg_tokens[1] + "\n", false);
 	}
 	else
 	{
 		Server::send(client, ERROR_QUIT(std::string("Client Exited")));
-		client->broadcastMsg(":" + client->getNick() + "!~" + client->getUser() + "@" + client->getHost() + " QUIT : Quit: " + client->getNick() + "\n");
+		client->broadcastMsg(":" + client->getNick() + "!~" + client->getUser() + "@" + client->getHost() + " QUIT : Quit: " + client->getNick() + "\n", false);
 	}
 	MessageParser::_server->closeClientConnection(client->getSockFd());
 	MessageParser::_server->delPollFd();
