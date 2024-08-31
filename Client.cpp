@@ -135,18 +135,19 @@ std::ostream &operator<<(std::ostream &os, const Client &client)
 	// Print other members as needed...
 	return os;
 }
-void Client::addChannel(Channel * channel)
+void Client::addChannel(Channel *channel)
 {
 	_channels[channel->getName()] = channel;
 };
 
-bool Client::isUserMemberOfChannel(const std::string &channel) const
+bool Client::isUserOnChannel(const std::string &channel) const
 {
 	if (_channels.find(channel) != _channels.end())
 		return true;
 	return false;
 };
-void Client::broadcastMsg(const std::string &msg) const {
+void Client::broadcastMsg(const std::string &msg, bool broadcastToHimself) const
+{
 	std::set<Client *> known_users;
 	for (std::map<std::string, Channel *>::const_iterator it = _channels.begin(); it != _channels.end(); it++)
 	{
@@ -154,7 +155,11 @@ void Client::broadcastMsg(const std::string &msg) const {
 		known_users.insert(new_users.begin(), new_users.end());
 	}
 	for (std::set<Client *>::iterator it = known_users.begin(); it != known_users.end(); it++)
+	{
+		if (*it == this && broadcastToHimself == false)
+			continue ;
 		Server::send(*it, msg);
+	}
 }
 
 /* ************************************************************************** */

@@ -19,7 +19,8 @@
 	(":ft_irc 352 " + client + " " + channel + " " + username +  " " + host + " " + server + " " + nick + " " + flags + " :" + hopcount + " " + realname + "\n")
 #define RPL_ENDOFWHO(nick, mask) (nick + " " + mask + " :End of WHO list\n")
 
-#define RPL_CREATIONTIME (nick, channel, creationtime) (":ft_irc 329 " + nick + " " channel + " " +  creationtime + "\n")
-#define RPL_CHANNELMODEIS(nick, channel, modestring) ( ":ft_irc 324 " + nick + " " + channel + " " modestring + "\n")
+#define RPL_CREATIONTIME(nick, channel, creationtime) (":ft_irc 329 " + nick + " " + channel + " " +  creationtime + "\n")
+#define RPL_CHANNELMODEIS(nick, channel, modestring) ( ":ft_irc 324 " + nick + " " + channel + " " + modestring + "\n")
+#define RPL_INVITING(nick, invited_nick, channel) ( ":ft_irc 341 " + nick + " " + invited_nick + " " + channel + "\n")
 // #define RPL_QUIT(msg) (:d!~ola@localhost "QUIT :" + msg)
 #endif

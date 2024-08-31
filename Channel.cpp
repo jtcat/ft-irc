@@ -8,7 +8,7 @@
 Channel::Channel()
 {
 }
-Channel::Channel(const std::string &name, Client *op) : _name(name), _user_limit(-1) , _invite_Only_flag(0), _creation_time(std::time(0)) {
+Channel::Channel(const std::string &name, Client *op) : _name(name), _user_limit(-1) , _invite_Only_flag(0), _creation_time(std::time(0)), _topic_restriction(0) {
 	addOp(op);
 };
 
@@ -79,6 +79,10 @@ void Channel::delUser(const std::string &nick)
 		_op.erase(op_it);
 }
 
+void Channel::clearInvitesList() {
+	_invites.clear();
+}
+
 /*
 ** --------------------------------- ACCESSOR ---------------------------------
 */
@@ -143,18 +147,56 @@ void Channel::addOp(Client *client) {
 	addUser(client);
 	_op.insert(client);
 };
+void Channel::addOp(const std::string &nick) {
+	std::set<Client *>::iterator it_client = getUserbyNick(nick);
+	if(it_client != _users.end())
+		_op.insert(*it_client);
+}
+void Channel::delOp(const std::string &nick) {
+	std::set<Client *>::iterator it_client = getOpbyNick(nick);
+	if (it_client != _op.end())
+		_op.erase(it_client);
+}
+
 void Channel::delUserFromInvites(Client *client) {
 	_invites.erase(client);
 };
 void Channel::addUserToInvites(Client *client) {
 	_invites.insert(client);
 };
-bool Channel::isUserInChannel(const std::string &nick) const
+bool Channel::isUserOnChannel(const std::string &nick) const
 {
 	if (getUserbyNick(nick) != _users.end())
 		return true;
 	return false;
 }
+int Channel::getTopicRestrictionFlag() const {
+	return _topic_restriction;
+};
+void Channel::setTopicRestrictionFlag(int flag) {
+	_topic_restriction = flag;
+};
+void Channel::setUserLimit(int limit) {
+	_user_limit = limit;
+};
+void Channel::setInviteFlag(int flag) {
+	_invite_Only_flag = flag;
+};
+void Channel::setPasswd(const std::string &passwd) {
+	_passwd = passwd;
+}
+bool Channel::isUserOp(const std::string &nick) const {
+	if (getOpbyNick(nick) != _op.end())
+		return true;
+	return false;
+}
+bool Channel::isUserOp(Client *client) {
+	std::set<Client *>::iterator it = _op.find(client);
+	if (it != _op.end())
+		return true;
+	return false;
+}
+
 
 /* ************************************************************************** */
 

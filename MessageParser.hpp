@@ -26,16 +26,17 @@ class MessageParser
 		static void Join_exec(std::vector<std::string> &msg_tokens, Client *client);
 		static std::map<std::string, std::string> Parse_join_params(std::vector<std::string> &msg_tokens,Client *client);
 
-		// static void Quit_exec(std::vector<std::string> &msg_tokens, Client *client);
+		static void Quit_exec(std::vector<std::string> &msg_tokens, Client *client);
 		// static void Part_exec(std::vector<std::string> &msg_tokens, Client *client);
 		static void Privmsg_exec(std::vector<std::string> &msg_tokens, Client *client);
 		static void Who_exec(std::vector<std::string> &msg_tokens, Client *client);
 		// static void Oper_exec(std::vector<std::string> &msg_tokens, Client *client);
-		static std::map<std::string, std::string>  Parse_mode_Params(std::vector<std::string> &msg_tokens, Client *client);
+		static std::vector<std::pair<std::string, std::string> > Parse_mode_Params(std::vector<std::string> &msg_tokens, Client *client);
+		static void Process_Mode_RPL(Client *client, const std::string &channel);
 		static void Mode_exec(std::vector<std::string> &msg_tokens, Client *client);
 		// static void Topic_exec(std::vector<std::string> &msg_tokens, Client *client);
 		// static void Kick_exec(std::vector<std::string> &msg_tokens, Client *client);
-		// static void Invite_exec(std::vector<std::string> &msg_tokens, Client *client);
+		static void Invite_exec(std::vector<std::string> &msg_tokens, Client *client);
 
 		static void registerClient(Client *client);
 

@@ -86,7 +86,8 @@ const Client Server::accept()
 	return (Client(newsock_fd, std::string(ip_str)));
 }
 
-int Server::send(Client *client, const std::string & msg) {
+int Server::send(Client *client, const std::string &msg)
+{
 	const char *msg_c_str = msg.c_str();
 	size_t len = strlen(msg_c_str);
 	size_t bytes_sent = 0;
@@ -132,21 +133,38 @@ void Server::registerNewClient()
 
 void Server::closeClientConnection(int client_fd)
 {
-	delete _clients[client_fd];
+	Client *client = _clients[client_fd];
 	_clients.erase(client_fd);
+	_client_users.erase(client->getNick());
+	delete client;
 }
 
-void Server::addChannel(Channel *channel) {
+void Server::addChannel(Channel *channel)
+{
 	_channels[channel->getName()] = channel;
 }
 
-bool Server::ChannelExists(const std::string &channel) const {
+bool Server::ChannelExists(const std::string &channel) const
+{
 	if (_channels.find(channel) != _channels.end())
 		return true;
 	return false;
 }
-Channel *Server::getChanel(const std::string &channel) const {
-	std::map<std::string, Channel *>::const_iterator  it = _channels.find(channel);
+bool Server::UserExists(const std::string &nick) const {
+	if (_client_users.find(nick) != _client_users.end())
+		return true;
+	return false;
+}
+Client *Server::getClient(const std::string &nick) const {
+	std::map<std::string, Client *>::const_iterator it = _client_users.find(nick);
+	if (it != _client_users.end())
+		return it->second;
+	return NULL;
+}
+
+Channel *Server::getChannel(const std::string &channel) const
+{
+	std::map<std::string, Channel *>::const_iterator it = _channels.find(channel);
 	if (it != _channels.end())
 		return it->second;
 	return NULL;
