@@ -216,9 +216,22 @@ void MessageParser::Join_exec(std::vector<std::string> &msg_tokens, Client *clie
 		}
 	}
 };
-// void MessageParser::Quit_exec(std::vector<std::string> &msg_tokens, Client *client) {
-// 	//use broadcast messaeg method in clients
-// };
+void MessageParser::Quit_exec(std::vector<std::string> &msg_tokens, Client *client) {
+
+	if (msg_tokens.size() > 1)
+	{
+		Server::send(client, ERROR_QUIT(msg_tokens[1]));
+		client->broadcastMsg(":" + client->getNick() + "!~" + client->getUser() + "@" + client->getHost() + " QUIT : Quit: " + msg_tokens[1] + "\n");
+	}
+	else
+	{
+		Server::send(client, ERROR_QUIT(std::string("Client Exited")));
+		client->broadcastMsg(":" + client->getNick() + "!~" + client->getUser() + "@" + client->getHost() + " QUIT : Quit: " + client->getNick() + "\n");
+	}
+	MessageParser::_server->closeClientConnection(client->getSockFd());
+	MessageParser::_server->delPollFd();
+	//stop it from broadcasting to himself
+};
 // void MessageParser::Part_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 
 void MessageParser::Process_Mode_RPL(Client *client, const std::string &channel_name)
@@ -465,10 +478,9 @@ void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client
 		command_map["USER"] = &MessageParser::User_exec;
 		command_map["NICK"] = &MessageParser::Nick_exec;
 		command_map["JOIN"] = &MessageParser::Join_exec;
-		// command_map["QUIT"] = &MessageParser::Quit_exec;
+		command_map["QUIT"] = &MessageParser::Quit_exec;
 		// command_map["PART"] = &MessageParser::Part_exec; //when a user parts make sure the channel that if this was the last user, the channel is destroyed
 		command_map["PRIVMSG"] = &MessageParser::Privmsg_exec;
-		// command_map["OPER"] = &MessageParser::Oper_exec;
 		command_map["MODE"] = &MessageParser::Mode_exec;
 		// command_map["TOPIC"] = &MessageParser::Topic_exec;
 		// command_map["KICK"] = &MessageParser::Kick_exec;

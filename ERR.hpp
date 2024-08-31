@@ -11,6 +11,7 @@
 #define ERR_NICKNAMEINUSE(nick) (":ft_irc 433 " + nick + " :Nickname is already in use\n")
 #define ERR_UNKNOWNCOMMAND(command) (":ft_irc 421 " + command + " :Unknown command\n")
 #define ERROR(err_msg) ("ERROR : " + err_msg + "\n")
+#define ERROR_QUIT(quit_msg) ("ERROR: Closing link: [Quit : " + quit_msg + "]\n")
 #define ERR_BADCHANMASK(channel) (":ft_irc 476 " + channel + " :Bad Channel Mask\n")
 #define ERR_BADCHANNELKEY(channel) (":ft_irc 475 " + channel + " :Cannot join channel (+k), wrong key provided\n")
 #define ERR_CHANNELISFULL(channel) (":ft_irc 471 " + channel+ " :Cannot join channel (+l), channel is full\n")

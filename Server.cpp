@@ -114,8 +114,10 @@ void Server::registerNewClient()
 
 void Server::closeClientConnection(int client_fd)
 {
-	delete _clients[client_fd];
+	Client *client = _clients[client_fd];
 	_clients.erase(client_fd);
+	_client_users.erase(client->getNick());
+	delete client;
 }
 
 void Server::addChannel(Channel *channel)
