@@ -75,11 +75,10 @@ void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *clie
 	else if (client->getRegisteredFlag() == 1)
 	{
 		// send reply to notify users of the nick change
-		client->broadcastMsg(":" + client->getNick() +"!~" + client->getUser() + "@" + client->getHost() + " NICK :" + msg_tokens[1] + "\n");
+		client->broadcastMsg(":" + client->getNick() + "!~" + client->getUser() + "@" + client->getHost() + " NICK :" + msg_tokens[1] + "\n");
 		_server->_client_users.erase(client->getNick());
 		client->setNick(msg_tokens[1]);
 		_server->_client_users.insert(std::make_pair(client->getNick(), client));
-
 	}
 	else
 	{
@@ -185,7 +184,7 @@ void MessageParser::Join_exec(std::vector<std::string> &msg_tokens, Client *clie
 		// chanel exists?
 		if (it_channel != MessageParser::_server->_channels.end())
 		{ // check if client isn't already a member of that channel and do nothing if so
-			if (client->isUserMemberOfChannel(it_channel->first))
+			if (client->isUserOnChannel(it_channel->first))
 				return;
 			if (it_channel->second->getUserLimit() > 0 && static_cast<int>(it_channel->second->getUsers().size()) >= it_channel->second->getUserLimit())
 				Server::send(client, ERR_CHANNELISFULL(it_channel->first));
@@ -221,7 +220,6 @@ void MessageParser::Join_exec(std::vector<std::string> &msg_tokens, Client *clie
 // 	//use broadcast messaeg method in clients
 // };
 // void MessageParser::Part_exec(std::vector<std::string> &msg_tokens, Client *client) {};
-// void MessageParser::Privmsg_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 
 void MessageParser::Process_Mode_RPL(Client *client, const std::string &channel_name)
 {
@@ -258,7 +256,7 @@ std::vector<std::pair<std::string, std::string> > MessageParser::Parse_mode_Para
 		Server::send(client, ERR_NEEDMOREPARAMS("MODE", client->getNick()));
 	else if (MessageParser::_server->ChannelExists(msg_tokens[1]) == 0)
 		Server::send(client, ERR_NOSUCHCHANNEL(msg_tokens[1]));
-	else if (client->isUserMemberOfChannel(msg_tokens[1]) == false)
+	else if (client->isUserOnChannel(msg_tokens[1]) == false)
 		Server::send(client, ERR_NOTONCHANNEL(client->getNick(), msg_tokens[1]));
 	else if (msg_tokens.size() == 2)
 		Process_Mode_RPL(client, msg_tokens[1]);
@@ -283,7 +281,7 @@ std::vector<std::pair<std::string, std::string> > MessageParser::Parse_mode_Para
 			{
 				if (!mode_params.empty())
 				{ // should I distiguish between ERR_NOSUCHNICK AND ERR_USERNOTINCHANNEL
-					if (ch == 'o' && _server->getChannel(msg_tokens[1])->isUserInChannel(mode_params.front()) == false)
+					if (ch == 'o' && _server->getChannel(msg_tokens[1])->isUserOnChannel(mode_params.front()) == false)
 						Server::send(client, ERR_NOSUCHNICK(client->getNick(), mode_params.front()));
 					else
 						mode_list.push_back(std::make_pair(mode_str, mode_params.front()));
@@ -413,8 +411,34 @@ void MessageParser::Mode_exec(std::vector<std::string> &msg_tokens, Client *clie
 // 	//how are invites gonna be handled? do they last forever ?
 // };
 
-// not registered -> valid command -> ERR_NOTREGISTERD
-// invalid command -> ignore
+void MessageParser::Invite_exec(std::vector<std::string> &msg_tokens, Client *client)
+{
+
+	if (msg_tokens.size() < 3)
+	{
+		Server::send(client, ERR_NEEDMOREPARAMS("INVITE", client->getNick()));
+		return;
+	}
+	Channel *channel = _server->getChannel(msg_tokens[2]);
+	if (_server->UserExists(msg_tokens[1]) == false)
+		Server::send(client, ERR_NOSUCHNICK(client->getNick(), msg_tokens[1]));
+	else if (_server->ChannelExists(msg_tokens[2]) == false)
+		Server::send(client, ERR_NOSUCHCHANNEL(msg_tokens[2]));
+	else if (client->isUserOnChannel(channel->getName()) == false)
+		Server::send(client, ERR_NOTONCHANNEL(client->getNick(), channel->getName()));
+	else if (channel->getInviteFlag() == 1 && channel->isUserOp(client) == false)
+		Server::send(client, ERR_CHANOPRIVSNEEDED(client->getNick(), channel->getName()));
+	else if (channel->isUserOnChannel(msg_tokens[1]) == true)
+		Server::send(client, ERR_USERONCHANNEL(client->getNick(), msg_tokens[1], channel->getName()));
+	else {
+		Client *invited = _server->getClient(msg_tokens[1]);
+		Server::send(client, RPL_INVITING(client->getNick(), invited->getNick(), channel->getName()));
+		Server::send(invited, (":" + client->getNick() + "!~" + client->getUser() + "@" + client->getHost() + " INVITE " + invited->getNick() + " " + channel->getName() + "\n"));
+		channel->addUserToInvites(invited);
+	}
+	//should i do invite w no params? and return invites list?
+}
+
 void MessageParser::processUnregisteredClient(std::vector<std::string> &msg_tokens, Client *client)
 {
 	std::map<std::string, void (*)(std::vector<std::string> &, Client *)>::iterator it = command_map.find(msg_tokens[0]);
@@ -448,7 +472,7 @@ void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client
 		command_map["MODE"] = &MessageParser::Mode_exec;
 		// command_map["TOPIC"] = &MessageParser::Topic_exec;
 		// command_map["KICK"] = &MessageParser::Kick_exec;
-		// command_map["INVITE"] = &MessageParser::Invite_exec;
+		command_map["INVITE"] = &MessageParser::Invite_exec;
 	}
 	if (client->getRegisteredFlag() == 0)
 		processUnregisteredClient(msg_tokens, client);

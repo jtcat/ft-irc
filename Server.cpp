@@ -129,6 +129,18 @@ bool Server::ChannelExists(const std::string &channel) const
 		return true;
 	return false;
 }
+bool Server::UserExists(const std::string &nick) const {
+	if (_client_users.find(nick) != _client_users.end())
+		return true;
+	return false;
+}
+Client *Server::getClient(const std::string &nick) const {
+	std::map<std::string, Client *>::const_iterator it = _client_users.find(nick);
+	if (it != _client_users.end())
+		return it->second;
+	return NULL;
+}
+
 Channel *Server::getChannel(const std::string &channel) const
 {
 	std::map<std::string, Channel *>::const_iterator it = _channels.find(channel);

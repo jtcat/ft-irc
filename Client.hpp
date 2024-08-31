@@ -26,8 +26,8 @@ public:
 	void setNick(const std::string &nick);
 	void setRealname(const std::string &realname);
 	const std::map<std::string, Channel *> &getChannels() const;
-	void addChannel(Channel * channel);
-	bool isUserMemberOfChannel(const std::string &channel) const;
+	void addChannel(Channel *channel);
+	bool isUserOnChannel(const std::string &channel) const;
 	void broadcastMsg(const std::string &msg) const;
 	Client &operator=(Client const &rhs);
 	friend std::ostream &operator<<(std::ostream &os, const Client &client);

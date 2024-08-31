@@ -19,6 +19,8 @@
 #define ERR_INVALIDMODEPARAM(nick, channel, mode) (":ft_irc 696 " + nick + " " + channel + " " + mode + " :You must specify a parameter for the mode\n")
 #define ERR_NOSUCHNICK(nick, user_nick) (":ft_irc 401 " + nick + " " + user_nick + " :No such nick\n")
 #define ERR_UNKNOWNMODE(nick, mode) (":ft_irc 472 " + nick + " " + mode + " :is not a recognized channel mode\n")
-#define ERR_NOTONCHANNEL(nick, channel) (":ft_irc 442 " + nick + " " + channel + " ::You are not on that channel\n")
+#define ERR_NOTONCHANNEL(nick, channel) (":ft_irc 442 " + nick + " " + channel + " :You are not on that channel\n")
 #define ERR_CHANOPRIVSNEEDED(nick, channel) (":ft_irc 482 " + nick + " " + channel + " :You are not channel operator\n")
+#define ERR_USERONCHANNEL(nick, invited_user, channel) (":ft_irc 443 " + nick + " " + invited_user + " " + channel + " :is already on channel\n")
+
 #endif

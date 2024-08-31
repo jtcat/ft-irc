@@ -7,5 +7,6 @@
 #define RPL_ENDOFNAMES(nick, channel) (":ft_irc 366 " + nick + " " + channel + " " + ":End of NAMES list\n")
 #define RPL_CREATIONTIME(nick, channel, creationtime) (":ft_irc 329 " + nick + " " + channel + " " +  creationtime + "\n")
 #define RPL_CHANNELMODEIS(nick, channel, modestring) ( ":ft_irc 324 " + nick + " " + channel + " " + modestring + "\n")
+#define RPL_INVITING(nick, invited_nick, channel) ( ":ft_irc 341 " + nick + " " + invited_nick + " " + channel + "\n")
 // #define RPL_QUIT(msg) (:d!~ola@localhost "QUIT :" + msg)
 #endif

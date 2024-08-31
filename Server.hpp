@@ -33,6 +33,8 @@ public:
 	void addChannel(Channel *channel);
 	Channel *getChannel(const std::string &channel) const;
 	bool ChannelExists(const std::string &channel) const;
+	bool UserExists(const std::string &nick) const;
+	Client *getClient(const std::string &nick) const;
 	//	int read(int client_sock, char* buffer, size_t size);
 private:
 	size_t _poll_i;

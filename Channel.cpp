@@ -164,7 +164,7 @@ void Channel::delUserFromInvites(Client *client) {
 void Channel::addUserToInvites(Client *client) {
 	_invites.insert(client);
 };
-bool Channel::isUserInChannel(const std::string &nick) const
+bool Channel::isUserOnChannel(const std::string &nick) const
 {
 	if (getUserbyNick(nick) != _users.end())
 		return true;

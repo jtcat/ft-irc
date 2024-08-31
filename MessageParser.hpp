@@ -34,7 +34,7 @@ class MessageParser
 		static void Mode_exec(std::vector<std::string> &msg_tokens, Client *client);
 		// static void Topic_exec(std::vector<std::string> &msg_tokens, Client *client);
 		// static void Kick_exec(std::vector<std::string> &msg_tokens, Client *client);
-		// static void Invite_exec(std::vector<std::string> &msg_tokens, Client *client);
+		static void Invite_exec(std::vector<std::string> &msg_tokens, Client *client);
 
 		static void registerClient(Client *client);
 
