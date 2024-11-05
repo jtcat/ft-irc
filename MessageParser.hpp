@@ -24,7 +24,9 @@ class MessageParser
 		static void User_exec(std::vector<std::string> &msg_tokens, Client *client);
 		static void Nick_exec(std::vector<std::string> &msg_tokens, Client *client);
 		static void Join_exec(std::vector<std::string> &msg_tokens, Client *client);
-		static std::map<std::string, std::string> Parse_join_params(std::vector<std::string> &msg_tokens,Client *client);
+		static void Part_exec(std::vector<std::string> &msg_tokens, Client *client);
+		static std::map<std::string, std::string>	Parse_join_params(std::vector<std::string> &msg_tokens,Client *client);
+		static std::vector<std::string> 			Parse_part_params(std::vector<std::string> &msg_tokens,Client *client);
 
 		static void Quit_exec(std::vector<std::string> &msg_tokens, Client *client);
 		// static void Part_exec(std::vector<std::string> &msg_tokens, Client *client);
@@ -37,6 +39,8 @@ class MessageParser
 		// static void Topic_exec(std::vector<std::string> &msg_tokens, Client *client);
 		// static void Kick_exec(std::vector<std::string> &msg_tokens, Client *client);
 		static void Invite_exec(std::vector<std::string> &msg_tokens, Client *client);
+
+		static void Ping_exec(std::vector<std::string> &msg_tokens, Client *client);
 
 		static void registerClient(Client *client);
 

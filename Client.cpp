@@ -135,17 +135,22 @@ std::ostream &operator<<(std::ostream &os, const Client &client)
 	// Print other members as needed...
 	return os;
 }
+
 void Client::addChannel(Channel *channel)
 {
 	_channels[channel->getName()] = channel;
-};
+}
 
-bool Client::isUserOnChannel(const std::string &channel) const
+bool Client::isUserOnChannel(const std::string &channel_name) const
 {
-	if (_channels.find(channel) != _channels.end())
-		return true;
+	std::map<std::string, Channel *>::const_iterator	channel = _channels.find(channel_name);
+
+	if (channel != _channels.end()) {
+		return channel->second->isUserOnChannel(getNick());
+	}
 	return false;
-};
+}
+
 void Client::broadcastMsg(const std::string &msg, bool broadcastToHimself) const
 {
 	std::set<Client *> known_users;

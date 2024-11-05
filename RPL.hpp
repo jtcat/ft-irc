@@ -1,7 +1,6 @@
-#ifndef RPL_HPP
-#define RPL_HPP
+#pragma once
 
-#define RPL_WELCOME(nick, user, host) (":ft_irc 001 :Welcome to the FT_IRC Network, " + nick + "!" + user + "@" + host + '\n')
+#define RPL_WELCOME(nick, user, host) (":ft_irc 001 " + nick + " :Welcome to the FT_IRC Network, " + nick + "!" + user + "@" + host + '\n')
 #define RPL_YOURHOST(nick, servername, version) (":ft_irc 002 " + nick + ":Your host is " + servername + " running, version " + version + "\n")
 #define RPL_CREATED(nick, datetime) (":ft_irc 003 " + nick + ":This server was created " + datetime + "\n")
 #define RPL_MYINFO(nick, servername, version, usermodes, channelmodes) (":ft_irc 004 " + nick + " " + servername + " " + version + " " + usermodes + " " + channelmodes + " \n")
@@ -11,6 +10,7 @@
 #define RPL_ENDOFMOTD(nick) (":ft_irc 376 " + nick + " :End of /MOTD command." + "\n")
 
 #define RPL_JOIN(nick, user, host, channel) (":" + nick + "!~" + user + "@" + host + " JOIN :" + channel + "\r\n")
+#define RPL_PART(nick, user, host, channel) (":" + nick + "!~" + user + "@" + host + " PART " + channel + " :Leaving\r\n")
 #define RPL_NAMREPLY(nick, channel, users) (":ft_irc 353 " + nick + " = " + channel + " :" + users + "\n")
 #define RPL_ENDOFNAMES(nick, channel) (":ft_irc 366 " + nick + " " + channel + " " + ":End of NAMES list\n")
 
@@ -23,4 +23,6 @@
 #define RPL_CHANNELMODEIS(nick, channel, modestring) ( ":ft_irc 324 " + nick + " " + channel + " " + modestring + "\n")
 #define RPL_INVITING(nick, invited_nick, channel) ( ":ft_irc 341 " + nick + " " + invited_nick + " " + channel + "\n")
 // #define RPL_QUIT(msg) (:d!~ola@localhost "QUIT :" + msg)
-#endif
+
+#define SRV_PONG(nick, servername, token) (":ft_irc PONG " + servername + " " + token + "\n")
+
