@@ -4,7 +4,7 @@
 #define RPL_YOURHOST(nick, servername, version) (":ft_irc 002 " + nick + ":Your host is " + servername + " running, version " + version + "\n")
 #define RPL_CREATED(nick, datetime) (":ft_irc 003 " + nick + ":This server was created " + datetime + "\n")
 #define RPL_MYINFO(nick, servername, version, usermodes, channelmodes) (":ft_irc 004 " + nick + " " + servername + " " + version + " " + usermodes + " " + channelmodes + " \n")
-#define RPL_ISUPPORT(nick) (":ft_irc 005 " + nick + " CHARSET=ascii CASEMAPPING=ascii PREFIX=(qaohv)~&@%+ CHANTYPES=# CHANLIMIT=#:10 CHANMODES=i,t,k,l :are supported by this server\n")
+#define RPL_ISUPPORT(nick) (":ft_irc 005 " + nick + " CHARSET=ascii CASEMAPPING=ascii PREFIX=(qaohv)~&@%+ CHANTYPES=# CHANLIMIT=#:10 CHANMODES=i,t,k,o,l :are supported by this server\n")
 #define RPL_MOTD(nick, motd) (":ft_irc 372 :" + motd + "\n")
 #define RPL_MOTDSTART(nick, servername) (":ft_irc 375 " + nick + " :- " + servername + " Message of the day - \n")
 #define RPL_ENDOFMOTD(nick) (":ft_irc 376 " + nick + " :End of /MOTD command." + "\n")
