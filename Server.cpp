@@ -125,6 +125,7 @@ void Server::delPollFd()
 void Server::registerNewClient()
 {
 	Client *new_client = new Client(this->accept());
+
 	int new_sock_fd = new_client->getSockFd();
 	_clients[new_sock_fd] = new_client;
 	_client_users.insert(std::make_pair(new_client->getNick(), new_client));
@@ -173,8 +174,10 @@ Channel *Server::getChannel(const std::string &channel) const
 void Server::monitorClients()
 {
 	char buff[512];
+
 	MessageParser::setServer(this);
 	this->addPollFd(_sock_fd);
+
 	while (true)
 	{
 		int poll_count = poll(&_pfds[0], _fd_count, -1);

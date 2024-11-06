@@ -59,6 +59,7 @@ std::set<Client *>::iterator Channel::getUserbyNick(const std::string &nick) con
 	}
 	return (_users.end());
 }
+
 std::set<Client *>::iterator Channel::getOpbyNick(const std::string &nick) const
 {
 	for (std::set<Client *>::iterator it = _op.begin(); it != _op.end(); it++)
@@ -68,6 +69,7 @@ std::set<Client *>::iterator Channel::getOpbyNick(const std::string &nick) const
 	}
 	return (_op.end());
 }
+
 void Channel::delUser(const std::string &nick)
 {
 	std::set<Client *>::iterator user_it = getUserbyNick(nick);
@@ -110,9 +112,11 @@ const std::string &Channel::getPasswd() const {
 int Channel::getUserLimit() const {
 	return _user_limit;
 }
+
 int Channel::getInviteFlag() const {
 	return _invite_Only_flag;
 }
+
 const time_t &Channel::getCreationTime() const {
 	return _creation_time;
 }
@@ -122,11 +126,13 @@ bool Channel::checkIfUserInvited(Client *client) {
 		return true;
 	return false;
 }
+
 void Channel::broadcastMsg(const std::string &msg) const {
 
 	for (std::set<Client *>::iterator it = _users.begin(); it != _users.end(); it++)
 		Server::send(*it, msg);
 }
+
 const std::string Channel::getUsersList() const {
 	std::stringstream ss;
 	for (std::set<Client *>::iterator it = _users.begin(); it != _users.end(); it++)

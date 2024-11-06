@@ -710,6 +710,7 @@ bool MessageParser::parseCommand(std::stringstream &msg, std::vector<std::string
 void MessageParser::parseBuffer(const std::string &buff, Client *client)
 {
 	std::stringstream ss_buff(buff);
+
 	while (!ss_buff.eof()) {
 		parseMessage(ss_buff, client);
 	}
@@ -719,6 +720,7 @@ bool MessageParser::parseMessage(std::stringstream &msg, Client *client)
 {
 	std::vector<std::string> msg_tokens;
 	(void)client;
+
 	if (!parseCommand(msg, msg_tokens) || !parseParams(msg, msg_tokens)) {
 		removeUntilCRLF(msg);
 		// print ERR_UNKNOWNERROR (400) -> can specify specific messages
@@ -732,7 +734,7 @@ bool MessageParser::parseMessage(std::stringstream &msg, Client *client)
 
 // handle signals
 // handle freeing resources before exit(1) to clean allocated resources
-// should chanel operators be stored together with users or separetely?
+// should channel operators be stored together with users or separetely?
 // when user is promoted to oper its entry gets removed from the users list and gets added to the operators
 
 // make function to broacast message like NICK and QUIT to all users of the groups of which
