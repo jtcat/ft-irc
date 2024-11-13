@@ -3,3 +3,5 @@ a.out
 ircserv
 .cache/
 compile_commands.json
+ircserver
+./vscode/*
