@@ -105,7 +105,7 @@ void MessageParser::Pass_exec(std::vector<std::string> &msg_tokens, Client *clie
 		if (client->getNick() != "*" && !client->getUser().empty())
 			registerClient(client);
 	}
-};
+}
 
 void MessageParser::User_exec(std::vector<std::string> &msg_tokens, Client *client)
 {
@@ -121,7 +121,7 @@ void MessageParser::User_exec(std::vector<std::string> &msg_tokens, Client *clie
 		if (client->getNick() != "*" && client->getAuthenticatedFlag() == 1)
 			registerClient(client);
 	}
-};
+}
 
 void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *client) {
 	// verify NICK specific syntax like username len, etc
@@ -181,7 +181,7 @@ void MessageParser::Privmsg_exec(std::vector<std::string> &msg_tokens, Client *c
 			Server::send(client, ERR_NOSUCHNICK(client->getNick(), *target_name));
 		}
 	}
-};
+}
 
 std::vector<std::string> split(const std::string &str, char delimiter) {
 	std::vector<std::string> tokens;
@@ -258,6 +258,7 @@ void handleClientJoinChannel(Client *client, Channel *channel) {
 
 void MessageParser::Join_exec(std::vector<std::string> &msg_tokens, Client *client) {
 	std::map<std::string, std::string> join_list = Parse_join_params(msg_tokens, client);
+
 	if (join_list.size() < 1)
 		return; // there was some parsing error
 	for (std::map<std::string, std::string>::iterator it_join_list = join_list.begin(); it_join_list != join_list.end(); it_join_list++)
@@ -299,20 +300,19 @@ void MessageParser::Join_exec(std::vector<std::string> &msg_tokens, Client *clie
 			handleClientJoinChannel(client, new_channel);
 		}
 	}
-};
+}
 
 void MessageParser::Part_exec(std::vector<std::string> &msg_tokens, Client *client) {
 	std::vector<std::string> part_list = Parse_part_params(msg_tokens, client);
+
 	if (part_list.size() < 1)
 		return; // there was some parsing error
-	for (std::vector<std::string>::iterator it_part_list = part_list.begin(); it_part_list != part_list.end(); it_part_list++)
-	{
+	for (std::vector<std::string>::iterator it_part_list = part_list.begin(); it_part_list != part_list.end(); it_part_list++) {
 		if (it_part_list->empty()) // there was some error while parsing, ignore;
 			continue;
 		std::map<std::string, Channel *>::iterator it_channel = MessageParser::_server->_channels.find(*it_part_list);
-		// chanel exists?
 		if (it_channel != MessageParser::_server->_channels.end())
-		{ // check if client isn't already a member of that channel and do nothing if so
+		{ 
 			if (client->isUserOnChannel(it_channel->first)) {
 				it_channel->second->delUser(client->getNick());
 				Server::send(client, RPL_PART(client->getNick(), client->getUser(), client->getHost(), it_channel->second->getName()));
@@ -343,7 +343,7 @@ void MessageParser::Quit_exec(std::vector<std::string> &msg_tokens, Client *clie
 	MessageParser::_server->closeClientConnection(client->getSockFd());
 	MessageParser::_server->delPollFd();
 	//stop it from broadcasting to himself
-};
+}
 // void MessageParser::Part_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 
 void MessageParser::Process_Mode_RPL(Client *client, const std::string &channel_name) {
@@ -529,7 +529,7 @@ void MessageParser::Mode_exec(std::vector<std::string> &msg_tokens, Client *clie
 	}
 	if (!mode_changes.first.empty())
 		channel->broadcastMsg(":" + client->getNick() + "!~" + client->getUser() + "@" + client->getHost() + " MODE " + channel->getName() + " " + mode_changes.first + mode_changes.second + "\n");
-};
+}
 // void MessageParser::Topic_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 // void MessageParser::Kick_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 // void MessageParser::Invite_exec(std::vector<std::string> &msg_tokens, Client *client) {
@@ -570,8 +570,7 @@ void MessageParser::Ping_exec(std::vector<std::string> &msg_tokens, Client *clie
 	Server::send(client, SRV_PONG(client->getNick(), _server->getName(), msg_tokens[1]));
 }
 
-void MessageParser::processUnregisteredClient(std::vector<std::string> &msg_tokens, Client *client)
-{
+void MessageParser::processUnregisteredClient(std::vector<std::string> &msg_tokens, Client *client) {
 	std::map<std::string, void (*)(std::vector<std::string> &, Client *)>::iterator it = command_map.find(msg_tokens[0]);
 
 	if (it != command_map.end()) // valid command but no registry -> ERR_NOTREGISTEREED
@@ -584,8 +583,7 @@ void MessageParser::processUnregisteredClient(std::vector<std::string> &msg_toke
 	// invalid command before registry is ignored;
 }
 
-void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client *client)
-{
+void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client *client) {
 	if (msg_tokens.size() == 0)
 		return;
 	std::map<std::string, void (*)(std::vector<std::string> &, Client *)>::iterator it = command_map.find(msg_tokens[0]);
@@ -616,8 +614,7 @@ void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client
 		Server::send(client, ERR_UNKNOWNCOMMAND(msg_tokens[0]));
 }
 
-void printVectorWithSpaces(const std::vector<std::string> &vec)
-{
+void printVectorWithSpaces(const std::vector<std::string> &vec) {
 	for (size_t i = 0; i < vec.size(); ++i)
 	{
 		std::cout << vec[i];
@@ -629,8 +626,7 @@ void printVectorWithSpaces(const std::vector<std::string> &vec)
 	std::cout << std::endl; // Print a newline at the end
 }
 
-void removeUntilCRLF(std::stringstream &msg)
-{
+void removeUntilCRLF(std::stringstream &msg) {
 	char ch;
 	while (msg.get(ch))
 	{
@@ -644,11 +640,11 @@ void removeUntilCRLF(std::stringstream &msg)
 // NICK dav:
 // :irc.local 432 yo dav: :Erroneous Nickname
 //-> what to do in this case?
-bool MessageParser::parseParams(std::stringstream &msg, std::vector<std::string> &msg_tokens)
-{
+bool MessageParser::parseParams(std::stringstream &msg, std::vector<std::string> &msg_tokens) {
 	char ch;
 	int include_space = 0;
 	std::stringstream ss;
+
 	while (msg.get(ch))
 	{
 		if (ch == '\r' && msg.peek() == '\n')
@@ -682,6 +678,7 @@ bool MessageParser::parseCommand(std::stringstream &msg, std::vector<std::string
 {
 	char ch;
 	std::stringstream ss;
+
 	while (msg.get(ch))
 	{
 		if (ch == '\r' && msg.peek() == '\n')
@@ -707,19 +704,16 @@ bool MessageParser::parseCommand(std::stringstream &msg, std::vector<std::string
 	return false;
 }
 
-void MessageParser::parseBuffer(const std::string &buff, Client *client)
+void MessageParser::parseBuffer(std::string &buff, Client *client)
 {
-	std::stringstream ss_buff(buff);
+	std::stringstream	msg_stream(buff);
 
-	while (!ss_buff.eof()) {
-		parseMessage(ss_buff, client);
-	}
+	parseMessage(msg_stream, client);
 }
 
 bool MessageParser::parseMessage(std::stringstream &msg, Client *client)
 {
-	std::vector<std::string> msg_tokens;
-	(void)client;
+	std::vector<std::string>	msg_tokens;
 
 	if (!parseCommand(msg, msg_tokens) || !parseParams(msg, msg_tokens)) {
 		removeUntilCRLF(msg);

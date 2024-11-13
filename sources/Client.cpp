@@ -4,20 +4,22 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include "Server.hpp"
+
+#include "ERR.hpp"
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-Client::Client()
+Client::Client() : _msg_buffer_max_size(MSG_BUFFER_MAX_SIZE)
 {
 }
 
-Client::Client(const Client &src)
+Client::Client(const Client &src) : _msg_buffer_max_size(MSG_BUFFER_MAX_SIZE)
 {
 	*this = src;
 }
 
-Client::Client(int sock_fd, std::string ip_addr) : _sock_fd(sock_fd), _host(ip_addr), _nick("*"), _user(""), _authenticated(0), _registered(0) {}
+Client::Client(int sock_fd, std::string ip_addr) : _sock_fd(sock_fd), _host(ip_addr), _nick("*"), _user(""), _msg_buffer_max_size(MSG_BUFFER_MAX_SIZE), _authenticated(0), _registered(0) {}
 
 /*
 ** -------------------------------- DESTRUCTOR --------------------------------
@@ -116,12 +118,12 @@ void Client::setUser(const std::string &username)
 void Client::setNick(const std::string &nick)
 {
 	_nick = nick;
-};
+}
 
 void Client::setRealname(const std::string &realname)
 {
 	_realname = realname;
-};
+}
 
 const std::string&	Client::getRealName(void) const {
 	return _realname;
@@ -153,7 +155,8 @@ bool Client::isUserOnChannel(const std::string &channel_name) const
 
 void Client::broadcastMsg(const std::string &msg, bool broadcastToHimself) const
 {
-	std::set<Client *> known_users;
+	std::set<Client *>	known_users;
+
 	for (std::map<std::string, Channel *>::const_iterator it = _channels.begin(); it != _channels.end(); it++)
 	{
 		const std::set<Client *> &new_users = it->second->getUsers();
@@ -167,4 +170,33 @@ void Client::broadcastMsg(const std::string &msg, bool broadcastToHimself) const
 	}
 }
 
-/* ************************************************************************** */
+void	Client::processMessage(const std::string& msgPart) {
+	std::string::size_type	beg, end;
+	std::string				subMsg;
+
+	beg = 0;
+	while ((end = msgPart.find("\r\n", beg)) != msgPart.npos) {
+		end += 2;
+		subMsg = msgPart.substr(beg, end - beg);
+		beg = end;
+		std::cout << "Debug: " << subMsg << std::endl;
+		std::cout << "Debug end: " << end << std::endl;
+		if (_msg_buffer.size() > 0) {
+			if ((_msg_buffer.size() + subMsg.size()) > _msg_buffer_max_size) {
+				_msg_buffer.clear();
+				Server::send(this, ERR_INPUTTOLONG(getNick()));
+				continue ;
+			}
+			_msg_buffer.append(subMsg);
+			MessageParser::parseBuffer(_msg_buffer, this);
+			_msg_buffer.clear();
+		}
+		else {
+			MessageParser::parseBuffer(subMsg, this);
+		}
+	}
+
+	if ((beg + 1) < (msgPart.size())) {
+		_msg_buffer.append(msgPart.substr(beg, end));
+	}
+}

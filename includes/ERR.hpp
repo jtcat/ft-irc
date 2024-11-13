@@ -31,4 +31,6 @@
 #define ERR_CHANOPRIVSNEEDED(nick, channel) (":ft_irc 482 " + nick + " " + channel + " :You are not channel operator\n")
 #define ERR_USERONCHANNEL(nick, invited_user, channel) (":ft_irc 443 " + nick + " " + invited_user + " " + channel + " :is already on channel\n")
 
+#define ERR_INPUTTOLONG(nick) (":ft_irc 417 + " + nick + " :Input line was too long\r\n")
+
 #endif
