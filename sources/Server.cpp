@@ -180,12 +180,24 @@ void Server::monitorClients()
 
 	while (true)
 	{
-		int poll_count = poll(&_pfds[0], _fd_count, -1);
+		//		check if client is active;
+		// use poll to check if any client is alive/error/absent
+		// result is stored in in poll_count   fd   / -1 / 0
+		// as long as TIMEOUT is not reached, poll will wait for a client to send data
+		int poll_count = poll(_pfds.data(), _fd_count, NO_TIMEOUT);
 		if (poll_count == -1)
 		{
 			perror("poll");
 			exit(1);
 		}
+		else if (poll_count == 0)
+		{
+			std::cerr << "pollserver: poll timed out" << std::endl;
+			continue;
+		}
+
+		// loop through all the clients and check if they have data to read
+
 		_poll_i = 0;
 		while (_poll_i < _pfds.size())
 		{

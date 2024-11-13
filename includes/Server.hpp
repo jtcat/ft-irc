@@ -14,6 +14,9 @@
 #include "Client.hpp"
 
 #define SERVER_MOTD "	<<< Welcome to the FT_IRC server! >>> \n"
+#define TIMEOUT 1000
+#define NO_TIMEOUT -1
+#define MAX_CLIENTS 10
 
 class Server {
 	public:
