@@ -19,17 +19,11 @@ VPATH = $(SRCSD) $(addprefix $(SRCSD), $(SUBSD))
 NAME = ircserv
 FILES =  main
 FILES += Server MessageParser Client Channel
-<<<<<<< HEAD
-OBJS = $(FILES:%=%.o)
-TARGET = $(addprefix $(OBJSD), $(OBJS))
-
-=======
 
 # objs and target
 OBJS = $(FILES:%=%.o)
 TARGET = $(addprefix $(OBJSD), $(OBJS))
 
->>>>>>> af_jc_00
 # valgrind
 LEAKS = valgrind
 LEAKS_FILE = valgrind-log.txt
