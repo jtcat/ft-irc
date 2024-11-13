@@ -212,7 +212,8 @@ void Server::monitorClients()
 					}
 					else
 					{
-						MessageParser::parseBuffer(buff, _clients[_pfds[_poll_i].fd]);
+						std::cout << "buffer: " << buff << std::endl;
+						_clients[_pfds[_poll_i].fd]->processMessage(buff);
 					}
 				}
 			}
