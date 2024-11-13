@@ -1,4 +1,4 @@
-To detect when a client disconnects unexpectedly from an IRC server, you can implement a few different techniques:
+To detect when a client disconnects unexpectedly from an IRC server, a few different techniques may be used:
 
 ### 1. **Detecting a Closed Socket**
    - When a client disconnects without explicitly sending a `LEAVE` command, the server’s `recv()` call on the client’s socket will typically return `0`, indicating an EOF (End of File). This means the client closed the connection, and you should then close the server’s side of the socket.
@@ -46,6 +46,6 @@ To detect when a client disconnects unexpectedly from an IRC server, you can imp
      ```
 
 ### 4. **Handling Socket Errors in `recv()` or `send()`**
-   - When you attempt to `send()` or `recv()` on a disconnected socket, it might return an error code (e.g., `ECONNRESET` or `EPIPE`), indicating the client is no longer available. In such cases, you should clean up the client resources.
+   - When an attempt to `send()` or `recv()` on a disconnected socket, it might return an error code (e.g., `ECONNRESET` or `EPIPE`), indicating the client is no longer available. In such cases, the client resources should be cleaned up
 
-Using a combination of these approaches can help create a robust server that accurately detects unexpected client disconnections. Let me know if you need more detailed code for any specific method!
+Using a combination of these approaches can help create a robust server that accurately detects unexpected client disconnections.
