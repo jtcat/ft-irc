@@ -314,8 +314,8 @@ void MessageParser::Part_exec(std::vector<std::string> &msg_tokens, Client *clie
 		if (it_channel != MessageParser::_server->_channels.end())
 		{ 
 			if (client->isUserOnChannel(it_channel->first)) {
+				it_channel->second->broadcastMsg(RPL_PART(client->getNick(), client->getUser(), client->getHost(), it_channel->second->getName()));
 				it_channel->second->delUser(client->getNick());
-				Server::send(client, RPL_PART(client->getNick(), client->getUser(), client->getHost(), it_channel->second->getName()));
 			}
 			else {
 				Server::send(client, ERR_NOTONCHANNEL(client->getNick(), it_channel->second->getName()));
