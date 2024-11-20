@@ -1,14 +1,14 @@
 # IRC Server Testing Checklist (Using HexChat)
 
 ## 1. Basic Connection and Registration
-- [ ] **Connect to the server**:Here’s the updated Markdown version with a checklist format for tracking progress:
+- [x] **Connect to the server**:Here’s the updated Markdown version with a checklist format for tracking progress:
 
   - Use HexChat to connect to your server's IP and port.
   - Check if the server accepts connections and returns the correct welcome messages (`RPL_WELCOME`).
 - [ ] **Handle invalid nicknames**:
   - Try setting nicknames with invalid characters or too long (e.g., `nick!name` or `verylongnickname`).
   - Verify if the server correctly rejects them with `ERR_ERRONEUSNICKNAME`.
-- [ ] **Detect duplicate nicknames**:
+- [x] **Detect duplicate nicknames**:
   - Attempt to connect two clients with the same nickname.
   - Ensure the server returns `ERR_NICKNAMEINUSE`.
 
