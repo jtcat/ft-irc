@@ -39,9 +39,8 @@
     - [ ] mode 'k'
     - [ ] mode 'o'
     - [ ] mode 'l'
-  - Verify the server enforces the modes.
-- [ ] **Set and retrieve topic**:Here’s the updated Markdown version with a checklist format for tracking progress:
-
+    - [ ] Verify the server enforces the modes.
+- [ ] **Set and retrieve topic**:
   - Use `/topic #channel NewTopic`.
   - Ensure only authorized users (if `+t` mode is enabled) can set topics.
 
