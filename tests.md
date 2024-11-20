@@ -1,10 +1,9 @@
-Here’s the updated Markdown version with a checklist format for tracking progress:
-
-```markdown
 # IRC Server Testing Checklist (Using HexChat)
 
 ## 1. Basic Connection and Registration
-- [ ] **Connect to the server**:
+- [ ] **Connect to the server**:Here’s the updated Markdown version with a checklist format for tracking progress:
+
+```markdown
   - Use HexChat to connect to your server's IP and port.
   - Check if the server accepts connections and returns the correct welcome messages (`RPL_WELCOME`).
 - [ ] **Handle invalid nicknames**:
@@ -36,7 +35,9 @@ Here’s the updated Markdown version with a checklist format for tracking progr
 - [ ] **Channel modes**:
   - Test setting channel modes (e.g., `/mode #channel +t` for topic restriction).
   - Verify the server enforces the modes.
-- [ ] **Set and retrieve topic**:
+- [ ] **Set and retrieve topic**:Here’s the updated Markdown version with a checklist format for tracking progress:
+
+```markdown
   - Use `/topic #channel NewTopic`.
   - Ensure only authorized users (if `+t` mode is enabled) can set topics.
 
@@ -109,4 +110,3 @@ Here’s the updated Markdown version with a checklist format for tracking progr
 ---
 
 By systematically going through these tests, you can uncover edge cases and fix any bugs or missing features. Let me know if you need help with any specific commands or error codes!
-```
