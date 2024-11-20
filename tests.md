@@ -15,7 +15,7 @@
 ---
 
 ## 2. User Commands
-- [ ] **Set and change nicknames**:
+- [x] **Set and change nicknames**:
   - Use `/nick` to change nicknames.
   - Confirm updates propagate to other users in the same channel.
 - [ ] **Set user information**:
@@ -25,14 +25,20 @@
 ---
 
 ## 3. Channels Management
-- [ ] **Create and join channels**:
+- [X] **Create and join channels**:
   - Test `/join #channelname` with valid and invalid channel names.
   - Confirm users can successfully join and the server broadcasts their presence to the channel.
-- [ ] **Leave a channel**:
+- [ ] **CHECK INVALID channels names**:
+- [X] **Leave a channel**:
   - Use `/part #channelname` to leave a channel.
   - Ensure the server notifies other members in the channel.
 - [ ] **Channel modes**:
   - Test setting channel modes (e.g., `/mode #channel +t` for topic restriction).
+    - [ ] mode 't'
+    - [ ] mode 'i'
+    - [ ] mode 'k'
+    - [ ] mode 'o'
+    - [ ] mode 'l'
   - Verify the server enforces the modes.
 - [ ] **Set and retrieve topic**:Here’s the updated Markdown version with a checklist format for tracking progress:
 
@@ -42,10 +48,10 @@
 ---
 
 ## 4. Messaging
-- [ ] **Private messages**:
+- [x] **Private messages**:
   - Send a `/msg nickname message`.
   - Verify delivery and format.
-- [ ] **Channel messages**:
+- [x] **Channel messages**:
   - Send messages to a channel (`/msg #channel message`).
   - Confirm all members of the channel receive the message.
 - [ ] **Notice messages**:
