@@ -3,7 +3,6 @@
 ## 1. Basic Connection and Registration
 - [ ] **Connect to the server**:Here’s the updated Markdown version with a checklist format for tracking progress:
 
-```markdown
   - Use HexChat to connect to your server's IP and port.
   - Check if the server accepts connections and returns the correct welcome messages (`RPL_WELCOME`).
 - [ ] **Handle invalid nicknames**:
@@ -37,7 +36,6 @@
   - Verify the server enforces the modes.
 - [ ] **Set and retrieve topic**:Here’s the updated Markdown version with a checklist format for tracking progress:
 
-```markdown
   - Use `/topic #channel NewTopic`.
   - Ensure only authorized users (if `+t` mode is enabled) can set topics.
 
