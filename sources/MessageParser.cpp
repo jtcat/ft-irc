@@ -344,7 +344,43 @@ void MessageParser::Quit_exec(std::vector<std::string> &msg_tokens, Client *clie
 	MessageParser::_server->delPollFd();
 	//stop it from broadcasting to himself
 }
-// void MessageParser::Part_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+
+void MessageParser::Topic_exec(std::vector<std::string> &msg_tokens, Client *client) {
+	if (msg_tokens.size() < 2) {
+		Server::send(client, ERR_NEEDMOREPARAMS("TOPIC", client->getNick()));
+	}
+	else {
+		std::map<std::string, Channel *>::iterator it_channel = MessageParser::_server->_channels.find(msg_tokens[1]);
+		if (it_channel != MessageParser::_server->_channels.end())
+		{ 
+			if (client->isUserOnChannel(msg_tokens[1])) {
+				if (msg_tokens.size() == 3) {
+					if (it_channel->second->_topic_restriction) {
+						if (it_channel->second->isUserOp(client->getNick())) {
+							it_channel->second->setTopic(client, msg_tokens[2]);
+						}
+						else {
+							Server::send(client, ERR_CHANOPRIVSNEEDED(client->getNick(), msg_tokens[1]));
+						}
+					}
+					else {
+						it_channel->second->setTopic(client, msg_tokens[2]);
+					}
+				}
+				else {
+					it_channel->second->sendTopicMsg(client);
+					it_channel->second->sendTopicWhoMsg(client);
+				}
+			}
+			else {
+				Server::send(client, ERR_NOTONCHANNEL(client->getNick(), msg_tokens[1]));
+			}
+		}
+		else {
+			Server::send(client, ERR_NOSUCHCHANNEL(client->getNick(), msg_tokens[1]));
+		}
+	}
+}
 
 void MessageParser::Process_Mode_RPL(Client *client, const std::string &channel_name) {
 	std::pair<std::string, std::string> modes("+", "");
@@ -530,7 +566,6 @@ void MessageParser::Mode_exec(std::vector<std::string> &msg_tokens, Client *clie
 	if (!mode_changes.first.empty())
 		channel->broadcastMsg(":" + client->getNick() + "!~" + client->getUser() + "@" + client->getHost() + " MODE " + channel->getName() + " " + mode_changes.first + mode_changes.second + "\n");
 }
-// void MessageParser::Topic_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 // void MessageParser::Kick_exec(std::vector<std::string> &msg_tokens, Client *client) {};
 // void MessageParser::Invite_exec(std::vector<std::string> &msg_tokens, Client *client) {
 // 	//how are invites gonna be handled? do they last forever ?
@@ -601,7 +636,7 @@ void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client
 		command_map["WHO"] = &MessageParser::Who_exec;
 		// command_map["OPER"] = &MessageParser::Oper_exec;
 		command_map["MODE"] = &MessageParser::Mode_exec;
-		// command_map["TOPIC"] = &MessageParser::Topic_exec;
+		command_map["TOPIC"] = &MessageParser::Topic_exec;
 		// command_map["KICK"] = &MessageParser::Kick_exec;
 		command_map["INVITE"] = &MessageParser::Invite_exec;
 		command_map["PING"] = &MessageParser::Ping_exec;

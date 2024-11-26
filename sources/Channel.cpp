@@ -1,6 +1,7 @@
 #include "Channel.hpp"
 #include "Server.hpp"
 #include <sstream>
+#include "RPL.hpp"
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
@@ -9,6 +10,7 @@ Channel::Channel()
 {
 }
 Channel::Channel(const std::string &name, Client *op) : _name(name), _user_limit(-1) , _invite_Only_flag(0), _creation_time(std::time(0)), _topic_restriction(0) {
+	setTopic(NULL, std::string());
 	addOp(op);
 };
 
@@ -91,6 +93,10 @@ void Channel::clearInvitesList() {
 
 const std::string &Channel::getName() const {
 	return _name;
+}
+
+const std::string &Channel::getTopic() const {
+	return _topic;
 }
 
 const std::set<Client *> &Channel::getUsers() const {
@@ -178,19 +184,59 @@ bool Channel::isUserOnChannel(const std::string &nick) const
 }
 int Channel::getTopicRestrictionFlag() const {
 	return _topic_restriction;
-};
+}
+
 void Channel::setTopicRestrictionFlag(int flag) {
 	_topic_restriction = flag;
-};
+}
+
 void Channel::setUserLimit(int limit) {
 	_user_limit = limit;
-};
+}
+
 void Channel::setInviteFlag(int flag) {
 	_invite_Only_flag = flag;
-};
+}
+
 void Channel::setPasswd(const std::string &passwd) {
 	_passwd = passwd;
 }
+
+void Channel::sendTopicWhoMsg(Client *client) const {
+	Server::send(client, RPL_TOPICWHOTIME(client->getNick(), getName(), (_topic_set_client ? _topic_set_client->getNick() : "server"), _topic_set_date));
+}
+
+void Channel::sendTopicMsg(Client *client) const {
+	Server::send(client, RPL_TOPIC(client->getNick(), _name, _topic));
+}
+
+void Channel::broadcastTopicMsg(Client *client) {
+	if (_topic.empty()) {
+		for (std::set<Client *>::iterator it = _users.begin(); it != _users.end(); it++)
+		{
+			Server::send(*it, RPL_NOTOPIC(client->getNick(), _name));
+		}
+	}
+	else {
+		for (std::set<Client *>::iterator it = _users.begin(); it != _users.end(); it++)
+		{
+			Server::send(*it, RPL_TOPIC((*it)->getNick(), _name, _topic));
+			if (client) {
+				sendTopicWhoMsg(*it);
+			}
+		}
+	}
+}
+
+void Channel::setTopic(Client *client, const std::string& new_topic) {
+	const time_t	t = time(NULL);
+	_topic = new_topic;
+	_topic_set_client = client;
+	_topic_set_date = ctime(&t);
+
+	broadcastTopicMsg(client);
+}
+
 bool Channel::isUserOp(const std::string &nick) const {
 	if (getOpbyNick(nick) != _op.end())
 		return true;

@@ -13,6 +13,9 @@
 #define RPL_PART(nick, user, host, channel) (":" + nick + "!~" + user + "@" + host + " PART " + channel + " :Leaving\r\n")
 #define RPL_NAMREPLY(nick, channel, users) (":ft_irc 353 " + nick + " = " + channel + " :" + users + "\n")
 #define RPL_ENDOFNAMES(nick, channel) (":ft_irc 366 " + nick + " " + channel + " " + ":End of NAMES list\n")
+#define RPL_NOTOPIC(nick, channel) (":ft_irc 331 " + nick + " " + channel + " " + ":No topic is set\n")
+#define RPL_TOPIC(nick, channel, topic) (":ft_irc 332 " + nick + " " + channel + " " + ":" + topic + "\n")
+#define RPL_TOPICWHOTIME(client, channel, setter_nick, set_date) (":ft_irc 333 " + client + " " + channel + " " + setter_nick + " " + set_date + "\n")
 
 //WHO
 #define RPL_WHOREPLY(client, channel, username, host, server, nick, flags, hopcount, realname) \

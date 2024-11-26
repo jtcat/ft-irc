@@ -21,6 +21,7 @@ public:
 	bool checkIfUserInvited(Client *client);
 	void delUser(const std::string &nick);
 	const std::string &getName() const;
+	const std::string &getTopic() const;
 	const std::set<Client *> &getUsers() const;
 	const std::set<Client *> &getOp() const;
 	const std::set<Client *> &getInvites() const;
@@ -29,10 +30,16 @@ public:
 	int getTopicRestrictionFlag() const;
 	int getUserLimit() const;
 	int getInviteFlag() const;
+
 	void setTopicRestrictionFlag(int flag);
 	void setUserLimit(int limit);
 	void setInviteFlag(int flag);
 	void setPasswd(const std::string &passwd);
+	void setTopic(Client *client, const std::string& new_topic);
+
+	void broadcastTopicMsg(Client *client);
+	void sendTopicWhoMsg(Client *client) const;
+	void sendTopicMsg(Client *client) const;
 	void broadcastMsg(const std::string &msg) const;
 	const std::string getUsersList() const;
 	void addOp(Client *client);
@@ -50,6 +57,9 @@ private:
 	Channel &operator=(Channel const &rhs);
 	Channel(Channel const &src);
 	std::string _name;
+	std::string _topic;
+	std::string _topic_set_date;
+	Client*		_topic_set_client;
 	std::set<Client *> _users;
 	std::set<Client *> _op;
 	std::set<Client *> _invites;
