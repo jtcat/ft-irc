@@ -16,7 +16,7 @@ static std::string	calcCreateDate(void) {
 	return ctime(&t);
 }
 
-Server::Server(int port, const std::string &passwd) : _name("ft_irc"), _motd(SERVER_MOTD), _create_date(calcCreateDate()), _poll_i(0), _pfds(), _passwd(passwd), _fd_count(0)
+Server::Server(int port, const std::string &passwd) : _name("ft_irc"), _motd(SERVER_MOTD), _create_date(calcCreateDate()), _default_kick_msg("unspecified reason"), _poll_i(0), _pfds(), _passwd(passwd), _fd_count(0)
 {
 	_sock_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -230,4 +230,8 @@ void Server::listen(int n)
 int Server::getSockFd()
 {
 	return _sock_fd;
+}
+
+const std::string&	Server::getDefaultKickMsg(void) const {
+	return _default_kick_msg;
 }

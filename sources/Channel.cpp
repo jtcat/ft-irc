@@ -2,6 +2,7 @@
 #include "Server.hpp"
 #include <sstream>
 #include "RPL.hpp"
+#include "ERR.hpp"
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
@@ -247,6 +248,16 @@ bool Channel::isUserOp(Client *client) {
 	if (it != _op.end())
 		return true;
 	return false;
+}
+
+void	Channel::kickUser(Client *kicker, const std::string& target, const std::string& comment) {
+	if (isUserOnChannel(target)) {
+		broadcastMsg(RPL_KICK(kicker->getNick(), kicker->getUser(), kicker->getHost(), getName(), target, comment));
+		delUser(target);
+	}
+	else {
+		Server::send(kicker, ERR_USERNOTINCHANNEL(kicker->getNick(), target, getName()));
+	}
 }
 
 

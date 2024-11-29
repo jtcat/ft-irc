@@ -42,11 +42,13 @@ class Server {
 		bool ChannelExists(const std::string &channel) const;
 		bool UserExists(const std::string &nick) const;
 		Client *getClient(const std::string &nick) const;
+		const std::string&	getDefaultKickMsg(void) const;
 		//	int read(int client_sock, char* buffer, size_t size);
 	private:
 		const std::string	_name;
 		const std::string	_motd;
 		const std::string	_create_date;
+		const std::string	_default_kick_msg;
 		size_t _poll_i;
 		int _sock_fd;
 		struct sockaddr_in _serv_addr;

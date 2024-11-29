@@ -53,6 +53,8 @@ public:
 	bool isUserOp(const std::string &nick) const;
 	bool isUserOp(Client *client);
 
+	void kickUser(Client *kicker, const std::string& target, const std::string& comment);
+
 private:
 	Channel &operator=(Channel const &rhs);
 	Channel(Channel const &src);

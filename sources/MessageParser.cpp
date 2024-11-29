@@ -222,6 +222,10 @@ std::map<std::string, std::string> MessageParser::Parse_join_params(std::vector<
 	return channels;
 }
 
+std::vector<std::string> MessageParser::Parse_kick_params(const std::string& user_list) {
+	return split(user_list, ',');
+}
+
 std::vector<std::string> MessageParser::Parse_part_params(std::vector<std::string> &msg_tokens, Client *client) {
 	// (beginning with a '&', '#', '+' or '!'character) of length up to fifty (50)
 	if (msg_tokens.size() < 2) {
@@ -566,7 +570,50 @@ void MessageParser::Mode_exec(std::vector<std::string> &msg_tokens, Client *clie
 	if (!mode_changes.first.empty())
 		channel->broadcastMsg(":" + client->getNick() + "!~" + client->getUser() + "@" + client->getHost() + " MODE " + channel->getName() + " " + mode_changes.first + mode_changes.second + "\n");
 }
-// void MessageParser::Kick_exec(std::vector<std::string> &msg_tokens, Client *client) {};
+
+void MessageParser::Kick_exec(std::vector<std::string> &msg_tokens, Client *client) {
+	if (msg_tokens.size() < 3)
+	{
+		Server::send(client, ERR_NEEDMOREPARAMS("KICK", client->getNick()));
+		return;
+	}
+
+	Channel					*channel;
+	const std::string*		comment = &_server->getDefaultKickMsg();
+
+	if (_server->ChannelExists(msg_tokens[1])) {
+		channel = _server->getChannel(msg_tokens[1]);
+		if (channel->isUserOnChannel(client->getNick())) {
+			if (channel->isUserOp(client->getNick())) {
+				std::vector<std::string>					user_list = Parse_kick_params(msg_tokens[2]);
+				std::vector<std::string>::const_iterator	it;
+
+				if ((msg_tokens.size() - user_list.size()) == 3) {
+					comment = &msg_tokens.back();
+				}
+
+				for (it = user_list.begin(); it < user_list.end(); it++) {
+					if (channel->isUserOnChannel(*it)) {
+						channel->kickUser(client, *it, *comment);
+					}
+					else {
+						Server::send(client, ERR_USERNOTINCHANNEL(client->getNick(), *it, channel->getName()));
+					}
+				}
+			}
+			else {
+				Server::send(client, ERR_CHANOPRIVSNEEDED(client->getNick(), channel->getName()));
+			}
+		}
+		else {
+			Server::send(client, ERR_NOTONCHANNEL(client->getNick(), channel->getName()));
+		}
+	}
+	else {
+		Server::send(client, ERR_NOSUCHCHANNEL(client->getNick(), msg_tokens[1]));
+	}
+}
+
 // void MessageParser::Invite_exec(std::vector<std::string> &msg_tokens, Client *client) {
 // 	//how are invites gonna be handled? do they last forever ?
 // };
@@ -637,7 +684,7 @@ void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client
 		// command_map["OPER"] = &MessageParser::Oper_exec;
 		command_map["MODE"] = &MessageParser::Mode_exec;
 		command_map["TOPIC"] = &MessageParser::Topic_exec;
-		// command_map["KICK"] = &MessageParser::Kick_exec;
+		command_map["KICK"] = &MessageParser::Kick_exec;
 		command_map["INVITE"] = &MessageParser::Invite_exec;
 		command_map["PING"] = &MessageParser::Ping_exec;
 	}
