@@ -219,19 +219,18 @@ void Channel::sendTopicMsg(Client *client) const {
 	}
 	else {
 		Server::send(client, RPL_TOPIC(client->getNick(), _name, _topic));
+		sendTopicWhoMsg(client);
 	}
 }
 
 void Channel::broadcastTopicMsg(Client *client) {
 	if (_topic.empty()) {
-		for (std::set<Client *>::iterator it = _users.begin(); it != _users.end(); it++)
-		{
+		for (std::set<Client *>::iterator it = _users.begin(); it != _users.end(); it++) {
 			Server::send(*it, RPL_NOTOPIC(client->getNick(), _name));
 		}
 	}
 	else {
-		for (std::set<Client *>::iterator it = _users.begin(); it != _users.end(); it++)
-		{
+		for (std::set<Client *>::iterator it = _users.begin(); it != _users.end(); it++) {
 			Server::send(*it, RPL_TOPIC((*it)->getNick(), _name, _topic));
 			if (client) {
 				sendTopicWhoMsg(*it);
@@ -241,7 +240,8 @@ void Channel::broadcastTopicMsg(Client *client) {
 }
 
 void Channel::setTopic(Client *client, const std::string& new_topic) {
-	const time_t	t = time(NULL);
+	time_t	t = std::time(NULL);
+
 	_topic = new_topic;
 	_topic_set_client = client;
 	_topic_set_date = ctime(&t);
