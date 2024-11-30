@@ -155,16 +155,19 @@ const std::string Channel::getUsersList() const {
 }
 void Channel::addUser(Client *client) {
 	_users.insert(client);
-};
+}
+
 void Channel::addOp(Client *client) {
 	addUser(client);
 	_op.insert(client);
-};
+}
+
 void Channel::addOp(const std::string &nick) {
 	std::set<Client *>::iterator it_client = getUserbyNick(nick);
 	if(it_client != _users.end())
 		_op.insert(*it_client);
 }
+
 void Channel::delOp(const std::string &nick) {
 	std::set<Client *>::iterator it_client = getOpbyNick(nick);
 	if (it_client != _op.end())
@@ -173,16 +176,19 @@ void Channel::delOp(const std::string &nick) {
 
 void Channel::delUserFromInvites(Client *client) {
 	_invites.erase(client);
-};
+}
+
 void Channel::addUserToInvites(Client *client) {
 	_invites.insert(client);
-};
+}
+
 bool Channel::isUserOnChannel(const std::string &nick) const
 {
 	if (getUserbyNick(nick) != _users.end())
 		return true;
 	return false;
 }
+
 int Channel::getTopicRestrictionFlag() const {
 	return _topic_restriction;
 }
