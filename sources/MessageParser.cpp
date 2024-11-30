@@ -255,6 +255,8 @@ void handleClientJoinChannel(Client *client, Channel *channel) {
 	channel->delUserFromInvites(client);
 	// send Join reply
 	channel->broadcastMsg(RPL_JOIN(client->getNick(), client->getUser(), client->getHost(), channel->getName()));
+
+	channel->sendTopicMsg(client);
 	// send NAMES REPLY
 	Server::send(client, RPL_NAMREPLY(client->getNick(), channel->getName(), channel->getUsersList()));
 	Server::send(client, RPL_ENDOFNAMES(client->getNick(), channel->getName()));

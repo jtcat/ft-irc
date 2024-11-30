@@ -214,7 +214,12 @@ void Channel::sendTopicWhoMsg(Client *client) const {
 }
 
 void Channel::sendTopicMsg(Client *client) const {
-	Server::send(client, RPL_TOPIC(client->getNick(), _name, _topic));
+	if (_topic.empty()) {
+		Server::send(client, RPL_NOTOPIC(client->getNick(), _name));
+	}
+	else {
+		Server::send(client, RPL_TOPIC(client->getNick(), _name, _topic));
+	}
 }
 
 void Channel::broadcastTopicMsg(Client *client) {
