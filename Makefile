@@ -1,7 +1,7 @@
 CXX = c++
 CXXWARNS = -Wextra -Werror -Wall
 CXXRESTR = -std=c++98
-CXXDEBUG = -ggdb
+CXXDEBUG = -g
 CXXFLAGS = $(CXXWARNS) $(CXXRESTR) $(CXXDEBUG)
 
 #SRCS = main.cpp Server.cpp MessageParser.cpp Client.cpp Channel.cpp
@@ -50,22 +50,22 @@ _ERROR 		= $(WHT)[$(RED)ERROR$(WHT)]
 
 # rules
 all: $(NAME)
-	@printf "\n $(_SUCCESS) $(BOLD)$(NAME)$(RESET) executable ready!\n\n"
+#	@printf "\n $(_SUCCESS) $(BOLD)$(NAME)$(RESET) executable ready!\n\n"
 
 $(NAME): $(OBJSD) $(TARGET)
-	@printf "\n $(_SUCCESS) $(BOLD)$(NAME)$(RESET) objects ready! \n"
-	@printf "\n $(_INFO) Linking $(BOLD)$(NAME)$(RESET) executable...\n "
-	$(CXX) $(CXXFLAGS) $(CXXDEBUG) $(TARGET) -o $@ -I $(INCSD)
-	@printf "$(GRN)█$(RESET)"
+#	@printf "\n $(_SUCCESS) $(BOLD)$(NAME)$(RESET) objects ready! \n"
+#	@printf "\n $(_INFO) Linking $(BOLD)$(NAME)$(RESET) executable...\n "
+	$(CXX) $(CXXFLAGS) $(TARGET) -o $@ -I $(INCSD)
+#	@printf "$(GRN)█$(RESET)"
 
 $(OBJSD)%.o: $(SRCSD)%.cpp
-	$(CXX) $(CXXFLAGS) $(CXXDEBUG) -c $< -o $@ -I $(INCSD)
-	@printf "$(YLW)█$(RESET)"
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -I $(INCSD)
+#	@printf "$(YLW)█$(RESET)"
 
 $(OBJSD):
-	@printf "\n $(_INFO) $(BOLD)$(OBJSD)$(RESET) directory created.\n"
-	@mkdir -p $(OBJSD)
-	@printf "\n $(_INFO) Compiling source files...$(WTH)\n "
+#	@printf "\n $(_INFO) $(BOLD)$(OBJSD)$(RESET) directory created.\n"
+	mkdir -p $(OBJSD)
+#	printf "\n $(_INFO) Compiling source files...$(WTH)\n "
 
 leaks:
 	@printf "\n$(_INFO) $(CYN)Running $(BOLD)$(LEAKS)$(RESET) on $(BOLD)$(NAME)$(RESET)...\n"
@@ -108,4 +108,4 @@ show:
 	@printf "\n"
 
 .PHONY: all leaks clean fclean cleanleaks re show
-.SILENT:
+#.SILENT:
