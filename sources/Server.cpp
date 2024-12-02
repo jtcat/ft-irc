@@ -134,7 +134,14 @@ void Server::registerNewClient()
 
 void Server::closeClientConnection(int client_fd)
 {
-	Client *client = _clients[client_fd];
+	Client	*client = _clients[client_fd];
+
+	for (std::map<std::string, Channel *>::iterator it = _channels.begin(); it != _channels.end(); it++) {
+		it->second->delUser(client->getNick());
+		it->second->delUserFromInvites(client);
+		it->second->broadcastMsg(":" + client->getNick() + "!~" + client->getUser() + "@" + client->getHost() + " QUIT : Quit: Connection closed\n");
+	}
+
 	_clients.erase(client_fd);
 	_client_users.erase(client->getNick());
 	delete client;
