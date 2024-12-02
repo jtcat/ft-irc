@@ -29,10 +29,6 @@ Client::~Client()
 {
 	// when a client is deleted we need to erase its entry from the list of users
 	// of all chanels from which that client was part of
-	for (std::map<std::string, Channel *>::iterator it = _channels.begin(); it != _channels.end(); it++) {
-		it->second->delUser(_nick);
-		it->second->delUserFromInvites(this);
-	}
 	close(_sock_fd);
 	// std::cout << "Destroying Client with ip = " << _host <<" and fd = " << _sock_fd<< std::endl;
 }
