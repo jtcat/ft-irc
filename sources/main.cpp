@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <signal.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -10,6 +11,15 @@
 #include <sstream>
 
 #include "Server.hpp"
+
+bool	g_run = true;
+
+void	sig_handler(int sig)
+{
+	(void)sig;
+
+	g_run = false;
+}
 
 int main(int argc, char **argv) {
   int portno;
@@ -24,6 +34,9 @@ int main(int argc, char **argv) {
 
   ss_port >> portno;
   ss_pass >> pass;
+
+  signal(SIGINT, sig_handler);
+
   Server server(portno, pass);
 
   server.bind();

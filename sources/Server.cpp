@@ -42,6 +42,14 @@ Server::Server(int port, const std::string &passwd) : _name("ft_irc"), _motd(SER
 Server::~Server()
 {
 	close(_sock_fd);
+
+	for (std::map<std::string, Channel*>::iterator	it = _channels.begin(); it != _channels.end(); it++) {
+		delete it->second;
+	}
+
+	for (std::map<int, Client *>::iterator it = _clients.begin(); it != _clients.end(); it++) {
+		delete it->second;
+	}
 }
 
 const std::string&	Server::getCreateDate(void) const {
@@ -94,10 +102,10 @@ int Server::send(Client *client, const std::string &msg)
 	size_t total_bytes_sent = 0;
 	while (total_bytes_sent < len)
 	{
-		bytes_sent = ::send(client->getSockFd(), msg_c_str + total_bytes_sent, len - total_bytes_sent, 0);
+		bytes_sent = ::send(client->getSockFd(), msg_c_str + total_bytes_sent, len - total_bytes_sent, MSG_NOSIGNAL);
 		if (static_cast<int>(bytes_sent) == -1)
 		{
-			perror("send");
+			//perror("send");
 			return -1;
 		}
 		total_bytes_sent += bytes_sent;
@@ -185,9 +193,9 @@ void Server::monitorClients()
 	MessageParser::setServer(this);
 	this->addPollFd(_sock_fd);
 
-	while (true)
+	while (g_run)
 	{
-		int poll_count = poll(&_pfds[0], _fd_count, -1);
+		int poll_count = poll(&_pfds[0], _fd_count, 0);
 		if (poll_count == -1)
 		{
 			perror("poll");
@@ -210,8 +218,9 @@ void Server::monitorClients()
 					if (bytes_read <= 0)
 					{
 						// Got error or connection closed by client
-						if (bytes_read == 0)
-							std::cerr << "pollserver: socket hung up" << std::endl;
+						if (bytes_read == 0) {
+							//std::cerr << "pollserver: socket hung up" << std::endl;
+						}
 						else
 							perror("recv");
 						closeClientConnection(_pfds[_poll_i].fd);

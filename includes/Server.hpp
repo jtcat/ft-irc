@@ -15,6 +15,8 @@
 
 #define SERVER_MOTD "	<<< Welcome to the FT_IRC server! >>> \n"
 
+extern bool	g_run;
+
 class Server {
 	public:
 		friend class MessageParser;
