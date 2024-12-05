@@ -34,6 +34,9 @@ void MessageParser::registerClient(Client *client)
 	Server::send(client, RPL_MYINFO(client->getNick(), _server->getName(), SERVER_VERSION, "", "itkl"));
 	Server::send(client, RPL_ISUPPORT(client->getNick()));
 	MOTD_exec(motd_params, client);
+	//Exec_Welcome_Bot(client);
+	//
+	_server->execWelcomeBot(client);
 	//plus all the other welcome messages
 }
 
