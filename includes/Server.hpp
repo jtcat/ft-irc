@@ -45,8 +45,15 @@ class Server {
 		bool UserExists(const std::string &nick) const;
 		Client *getClient(const std::string &nick) const;
 		const std::string&	getDefaultKickMsg(void) const;
+
+		void createBot(void);
+		void execWelcomeBot(Client* client) const;
+		static const std::string&	pickRandomQuote(void);
 		//	int read(int client_sock, char* buffer, size_t size);
 	private:
+		static const std::string _nietzscheQuotes[];
+
+		Client*				_welcome_bot;
 		const std::string	_name;
 		const std::string	_motd;
 		const std::string	_create_date;

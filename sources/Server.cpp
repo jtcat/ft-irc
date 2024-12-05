@@ -6,14 +6,50 @@
 #include <cstring>
 #include <ctime>
 #include "MessageParser.hpp"
+#include "RPL.hpp"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
+const std::string nietzscheQuotes[] = {
+	"He who has a why to live can bear almost any how.",
+	"That which does not kill us makes us stronger.",
+	"Without music, life would be a mistake.",
+	"There are no facts, only interpretations.",
+	"The higher we soar, the smaller we appear to those who cannot fly.",
+	"The individual has always had to struggle to keep from being overwhelmed by the tribe.",
+	"Whoever fights monsters should see to it that in the process he does not become a monster.",
+	"In every real man, a child is hidden that wants to play.",
+	"To live is to suffer, to survive is to find some meaning in the suffering.",
+	"If you gaze long enough into an abyss, the abyss will gaze back into you.",
+	"We love life, not because we are used to living but because we are used to loving.",
+	"Become who you are! (Be yourself!)",
+	"There is always some madness in love. But there is also always some reason in madness.",
+	"One must still have chaos in oneself to be able to give birth to a dancing star.",
+	"The man of knowledge must be able not only to love his enemies but also to hate his friends.",
+	"It is not the strength, but the duration, of great sentiments that makes great men.",
+	"To deny one’s own experiences is to put one’s self on a level with those who have never lived at all.",
+	"A man’s worth is determined by how much truth he can endure.",
+	"The best weapon against an enemy is another enemy."
+};
 
 static std::string	calcCreateDate(void) {
 	const time_t	t = time(NULL);
 
 	return ctime(&t);
+}
+
+void	Server::createBot(void) {
+	Client*	botClient = new Client(-1, "ft-irc");
+
+	botClient->setNick("NietzscheBot");
+	botClient->setRealname("NietzscheBot");
+	botClient->setUser("NietzscheBot");
+	botClient->setRegisteredFlag(1);
+	botClient->setAuthenticatedFlag(1);
+	_clients[-1] = botClient;
+	_client_users.insert(std::make_pair(botClient->getNick(), botClient));
+	_welcome_bot = botClient;
 }
 
 Server::Server(int port, const std::string &passwd) : _name("ft_irc"), _motd(SERVER_MOTD), _create_date(calcCreateDate()), _default_kick_msg("unspecified reason"), _poll_i(0), _pfds(), _passwd(passwd), _fd_count(0)
@@ -37,6 +73,8 @@ Server::Server(int port, const std::string &passwd) : _name("ft_irc"), _motd(SER
 		perror("setsockopt");
 		exit(1);
 	}
+
+	createBot();
 }
 
 Server::~Server()
@@ -130,6 +168,21 @@ void Server::delPollFd()
 	_fd_count--;
 };
 
+const std::string&	Server::pickRandomQuote(void){
+    // Calculate the number of quotes in the array
+    static size_t numQuotes = sizeof(nietzscheQuotes) / sizeof(nietzscheQuotes[0]);
+
+    // Seed the random number generator with the current time
+    srand(time(0));
+
+    // Generate a random index between 0 and numQuotes - 1
+    int randomIndex = rand() % numQuotes;
+
+	std::cout << "Quote: " << nietzscheQuotes[randomIndex] << std::endl;
+
+	return nietzscheQuotes[randomIndex];
+}
+
 void Server::registerNewClient()
 {
 	Client *new_client = new Client(this->accept());
@@ -138,6 +191,10 @@ void Server::registerNewClient()
 	_clients[new_sock_fd] = new_client;
 	_client_users.insert(std::make_pair(new_client->getNick(), new_client));
 	this->addPollFd(new_sock_fd);
+}
+
+void	Server::execWelcomeBot(Client* client) const {
+	Server::send(client, ":" + _welcome_bot->getNick() + "!" + _welcome_bot->getUser()  + "@" + _welcome_bot->getHost() + " " + "PRIVMSG " + client->getNick() + " :" + Server::pickRandomQuote() + "\n");
 }
 
 void Server::closeClientConnection(int client_fd)
@@ -198,7 +255,7 @@ void Server::monitorClients()
 		int poll_count = poll(&_pfds[0], _fd_count, 0);
 		if (poll_count == -1)
 		{
-			perror("poll");
+			//perror("poll");
 			exit(1);
 		}
 		_poll_i = 0;
