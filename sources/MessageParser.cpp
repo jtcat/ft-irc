@@ -132,8 +132,8 @@ void MessageParser::Nick_exec(std::vector<std::string> &msg_tokens, Client *clie
 		Server::send(client, ERR_NONICKNAMEGIVEN());
 	else if (_server->_client_users.find(msg_tokens[1]) != _server->_client_users.end())
 		Server::send(client, ERR_NICKNAMEINUSE(client->getNick()));
-	// else if (nick name not acoording to syntax)
-	// 	Server::send(client, ERR_ERRONEUSNICKNAME(client->getNick()));
+	else if (!validateNick(msg_tokens[1]))
+	 	Server::send(client, ERR_ERRONEUSNICKNAME("*", msg_tokens[1]));
 	else if (client->getRegisteredFlag() == 1)
 	{
 		// send reply to notify users of the nick change
@@ -811,6 +811,36 @@ bool MessageParser::parseMessage(std::stringstream &msg, Client *client)
 	execute_command(msg_tokens, client);
 	// printVectorWithSpaces(msg_tokens);
 	return true;
+}
+
+bool MessageParser::isSpecial(int ch) {
+	return ch == '['
+		|| ch == ']'
+		|| ch == '\\'
+		|| ch == '`'
+		|| ch == '_'
+		|| ch == '^'
+		|| ch == '{'
+		|| ch == '|'
+		|| ch == '}';
+}
+
+bool MessageParser::validateNick(const std::string &nick) {
+	std::string::const_iterator	it = nick.begin();
+
+	if (nick.length() == 0 || nick.length() > 9) {
+		return false;
+	}
+
+	if (!std::isalpha(nick[0]) && !MessageParser::isSpecial(nick[0])) {
+		return false;
+	}
+
+	while (std::isalnum(*it) || MessageParser::isSpecial(*it) || *it == '-') {
+		it++;
+	}
+
+	return it == nick.end();
 }
 
 // handle signals
