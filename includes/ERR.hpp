@@ -14,7 +14,7 @@
 #define ERR_NOTEXTTOSEND(client) (":ft_irc 412 " + client + " :No text to send\n")
 
 #define ERR_NONICKNAMEGIVEN() (":ft_irc 431 * :No nickname given\n")
-#define ERR_ERRONEUSNICKNAME(nick) (":ft_irc 432 " + nick +" :Erroneous nickname\n")
+#define ERR_ERRONEUSNICKNAME(client, nick) (":ft_irc 432 " client " " + nick +" :Erroneous nickname\n")
 #define ERR_NICKNAMEINUSE(nick) (":ft_irc 433 " + nick + " :Nickname is already in use\n")
 #define ERR_UNKNOWNCOMMAND(command) (":ft_irc 421 " + command + " :Unknown command\n")
 #define ERROR(err_msg) ("ERROR : " + err_msg + "\n")

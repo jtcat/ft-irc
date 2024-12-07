@@ -22,6 +22,7 @@ class MessageParser
 		static bool parseParams(std::stringstream &msg, std::vector<std::string> &msg_tokens);
 		static void processUnregisteredClient(std::vector<std::string> &msg_tokens, Client *client);
 		static void execute_command(std::vector<std::string> &msg_token, Client *client);
+		static bool validateNick(const std::string& nick);
 
 		static void MOTD_exec(std::vector<std::string> &msg_tokens, Client *client);
 		static void Pass_exec(std::vector<std::string> &msg_tokens, Client *client);
@@ -52,6 +53,7 @@ class MessageParser
 
 		static void setServer(Server *server);
 
+		static bool isSpecial(int ch);
 	private:
 		static std::map<std::string, void (*)(std::vector<std::string> &, Client *)> command_map;
 		static Server *_server;
