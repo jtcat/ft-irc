@@ -164,6 +164,7 @@ void Server::addPollFd(int client_fd)
 
 void Server::delPollFd()
 {
+	close(_pfds[_poll_i].fd);
 	_pfds.erase(_pfds.begin() + _poll_i);
 	_fd_count--;
 };
