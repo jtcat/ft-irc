@@ -171,26 +171,36 @@ void Client::broadcastMsg(const std::string &msg, bool broadcastToHimself) const
 void	Client::processMessage(const std::string& msgPart) {
 	std::string::size_type	beg, end;
 	std::string				subMsg;
+	std::string 			msgBuffer = _msg_buffer;
+
+	std::cout << __func__ << "::Debug [0] <_msg_buffer> : " << _msg_buffer << std::endl;
 
 	beg = 0;
 	while ((end = msgPart.find("\r\n", beg)) != msgPart.npos) {
 		end += 2;
 		subMsg = msgPart.substr(beg, end - beg);
 		beg = end;
-		std::cout << "Debug: " << subMsg << std::endl;
-		std::cout << "Debug end: " << end << std::endl;
+		std::cout << __func__ << "::Debug [1] <subMsg> : " << subMsg << std::endl;
+		std::cout << __func__ << "::Debug [2] <end>    : " << end << std::endl;
 		if (_msg_buffer.size() > 0) {
 			if ((_msg_buffer.size() + subMsg.size()) > _msg_buffer_max_size) {
 				_msg_buffer.clear();
 				Server::send(this, ERR_INPUTTOLONG(getNick()));
 				continue ;
 			}
-			_msg_buffer.append(subMsg);
-			MessageParser::parseBuffer(_msg_buffer, this);
+			// _msg_buffer.append(subMsg);
+			msgBuffer.append(subMsg);
+			std::cout << __func__ << "::Debug [3] <_msg_buffer> : " << _msg_buffer << std::endl;
+			std::cout << __func__ << "::Debug [4.1] else ... parseBuffer() done" << std::endl;
+			MessageParser::parseBuffer(msgBuffer, this);
+			// MessageParser::parseBuffer(_msg_buffer, this);
+			std::cout << __func__ << "::Debug [4.2] else ... parseBuffer() done" << std::endl;
 			_msg_buffer.clear();
 		}
 		else {
+			std::cout << __func__ << "::Debug [5.1] else ... parseBuffer() done" << std::endl;
 			MessageParser::parseBuffer(subMsg, this);
+			std::cout << __func__ << "::Debug [5.2] else ... parseBuffer() done" << std::endl;
 		}
 	}
 

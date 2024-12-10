@@ -321,7 +321,7 @@ void MessageParser::Part_exec(std::vector<std::string> &msg_tokens, Client *clie
 			continue;
 		std::map<std::string, Channel *>::iterator it_channel = MessageParser::_server->_channels.find(*it_part_list);
 		if (it_channel != MessageParser::_server->_channels.end())
-		{ 
+		{
 			if (client->isUserOnChannel(it_channel->first)) {
 				it_channel->second->broadcastMsg(RPL_PART(client->getNick(), client->getUser(), client->getHost(), it_channel->second->getName()));
 				it_channel->second->delUser(client->getNick());
@@ -361,7 +361,7 @@ void MessageParser::Topic_exec(std::vector<std::string> &msg_tokens, Client *cli
 	else {
 		std::map<std::string, Channel *>::iterator it_channel = MessageParser::_server->_channels.find(msg_tokens[1]);
 		if (it_channel != MessageParser::_server->_channels.end())
-		{ 
+		{
 			if (client->isUserOnChannel(msg_tokens[1])) {
 				if (msg_tokens.size() == 3) {
 					if (it_channel->second->_topic_restriction) {
@@ -768,7 +768,7 @@ bool MessageParser::parseCommand(std::stringstream &msg, std::vector<std::string
 
 	while (msg.get(ch))
 	{
-		if (ch == '\r' && msg.peek() == '\n')
+		if ((ch == '\r' && msg.peek() == '\n'))//||(ch == '\n' && msg.peek() == '\r'))
 		{
 			msg.unget(); // Put the character back into the stream
 			if (ss.str().length() > 0)
@@ -802,14 +802,19 @@ bool MessageParser::parseMessage(std::stringstream &msg, Client *client)
 {
 	std::vector<std::string>	msg_tokens;
 
+	std::cout << __func__ << "::START" << std::endl;
 	if (!parseCommand(msg, msg_tokens) || !parseParams(msg, msg_tokens)) {
+		std::cout << __func__ << "::DEBUG[0]" << std::endl;
 		removeUntilCRLF(msg);
 		// print ERR_UNKNOWNERROR (400) -> can specify specific messages
+		std::cout << __func__ << "::END[0]" << std::endl;
 		return false;
 	}
 	// execute command;
+	std::cout << __func__ << "::DEBUG[1]" << std::endl;
 	execute_command(msg_tokens, client);
 	// printVectorWithSpaces(msg_tokens);
+	std::cout << __func__ << "::END[1]" << std::endl;
 	return true;
 }
 

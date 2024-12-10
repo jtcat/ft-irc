@@ -286,7 +286,7 @@ void Server::monitorClients()
 					}
 					else
 					{
-						std::cout << "buffer: " << buff << std::endl;
+						std::cout << __func__ << "::buffer: " << buff << std::endl;
 						_clients[_pfds[_poll_i].fd]->processMessage(buff);
 					}
 				}
