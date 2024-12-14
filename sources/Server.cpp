@@ -164,9 +164,10 @@ void Server::addPollFd(int client_fd)
 
 void Server::delPollFd()
 {
-	close(_pfds[_poll_i].fd);
+	// close(_pfds[_poll_i].fd);
 	_pfds.erase(_pfds.begin() + _poll_i);
 	_fd_count--;
+	_poll_i--;
 };
 
 const std::string&	Server::pickRandomQuote(void){
@@ -208,8 +209,8 @@ void Server::closeClientConnection(int client_fd)
 		it->second->broadcastMsg(":" + client->getNick() + "!~" + client->getUser() + "@" + client->getHost() + " QUIT : Quit: Connection closed\n");
 	}
 
-	_clients.erase(client_fd);
 	_client_users.erase(client->getNick());
+	_clients.erase(client_fd);
 	delete client;
 }
 

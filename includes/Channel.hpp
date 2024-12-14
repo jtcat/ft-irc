@@ -30,7 +30,6 @@ public:
 	int getTopicRestrictionFlag() const;
 	int getUserLimit() const;
 	int getInviteFlag() const;
-
 	void setTopicRestrictionFlag(int flag);
 	void setUserLimit(int limit);
 	void setInviteFlag(int flag);

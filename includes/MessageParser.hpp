@@ -17,7 +17,7 @@ class MessageParser
 		~MessageParser(void);
 		// static void setPasswd(const std::string & pass);
 		static bool parseMessage(std::stringstream &msg, Client *client);
-		static void parseBuffer(std::string &msg, Client *client);
+		static void parseBuffer(std::string msg, Client *client);
 		static bool parseCommand(std::stringstream &msg, std::vector<std::string> &msg_tokens);
 		static bool parseParams(std::stringstream &msg, std::vector<std::string> &msg_tokens);
 		static void processUnregisteredClient(std::vector<std::string> &msg_tokens, Client *client);
