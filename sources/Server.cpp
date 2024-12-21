@@ -278,15 +278,17 @@ void Server::monitorClients()
 					{
 						// Got error or connection closed by client
 						if (bytes_read == 0) {
-							//std::cerr << "pollserver: socket hung up" << std::endl;
+							std::cerr << "pollserver: socket hung up" << std::endl;
 						}
 						else
 							perror("recv");
 						closeClientConnection(_pfds[_poll_i].fd);
 						delPollFd();
 					}
-					else
+					else {
+						std::cout << "BUFF :" << buff;
 						MessageParser::processMessage(buff, _clients[_pfds[_poll_i].fd]);
+					}
 				}
 			}
 			_poll_i++;

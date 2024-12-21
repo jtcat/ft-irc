@@ -522,7 +522,7 @@ std::vector<std::pair<std::string, std::string> > MessageParser::Parse_mode_Para
 void MessageParser::Mode_exec(std::vector<std::string> &msg_tokens, Client *client)
 {
 	std::vector<std::pair<std::string, std::string> > mode_list = Parse_mode_Params(msg_tokens, client);
-	//write a function to print the mode list
+	// write a function to print the mode list
 	std::pair<std::string, std::string> mode_changes;
 	if (mode_list.size() < 1)
 		return;
@@ -741,7 +741,6 @@ void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client
 	if (msg_tokens.size() == 0)
 		return;
 	std::map<std::string, void (*)(std::vector<std::string> &, Client *)>::iterator it = command_map.find(msg_tokens[0]);
-
 	if (command_map.empty())
 	{
 		command_map["PASS"] = &MessageParser::Pass_exec;
@@ -882,34 +881,41 @@ bool MessageParser::parseMessage(std::stringstream &msg, Client *client)
 	if (client->getMsgBufferSize() > 0)
 		client->clearMsgBuffer();
 	execute_command(msg_tokens, client);
-	// printVectorWithSpaces(msg_tokens);
 	return true;
 }
 
-void	MessageParser::processMessage(const std::string& msgPart, Client *client) {
-	std::string::size_type	beg, end;
-	std::string				subMsg;
+void MessageParser::processMessage(const std::string &msgPart, Client *client)
+{
+	std::string::size_type beg, end;
+	std::string subMsg;
 
+	// std::cout << msgPart <<"+";
 	beg = 0;
-	while ((end = msgPart.find("\r\n", beg)) != msgPart.npos) {
+	while ((end = msgPart.find("\r\n", beg)) != msgPart.npos)
+	{
 		end += 2;
 		subMsg = msgPart.substr(beg, end - beg);
 		beg = end;
-		if (client->getMsgBufferSize() > 0) {
-			if ((client->getMsgBufferSize() + subMsg.size()) > client->getBufferMaxSize()) {
+		if (client->getMsgBufferSize() > 0)
+		{
+			if ((client->getMsgBufferSize() + subMsg.size()) > client->getBufferMaxSize())
+			{
 				client->clearMsgBuffer();
 				Server::send(client, ERR_INPUTTOLONG(client->getNick()));
-				continue ;
+				continue;
 			}
 			client->appendToMsgBuffer(subMsg);
+			std::cout << "SubMsg :" << subMsg;
 			MessageParser::parseBuffer(client->getMsgBuffer(), client);
 		}
-		else {
+		else
+		{
 			MessageParser::parseBuffer(subMsg, client);
 		}
 	}
 
-	if ((beg + 1) < (msgPart.size())) {
+	if ((beg) < (msgPart.size()))
+	{
 		client->appendToMsgBuffer(msgPart.substr(beg, end));
 	}
 }
