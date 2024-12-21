@@ -27,7 +27,6 @@ class Client {
 
 		std::string	getSourceStr(void) const;
 
-		void	processMessage(const std::string& msgPart);
 		//void	appendMsgToBuffer(const std::string& msgPart);
 
 		void setAuthenticatedFlag(int flag);
@@ -39,6 +38,12 @@ class Client {
 		void addChannel(Channel *channel);
 		bool isUserOnChannel(const std::string &channel) const;
 		void broadcastMsg(const std::string &msg, bool broadcastToHimself) const;
+		void clearMsgBuffer();
+		void appendToMsgBuffer(const std::string &str);
+		const std::string & getMsgBuffer();
+		std::string::size_type getMsgBufferSize();
+		std::string::size_type getBufferMaxSize();
+
 		Client &operator=(Client const &rhs);
 		friend std::ostream &operator<<(std::ostream &os, const Client &client);
 
@@ -50,7 +55,7 @@ class Client {
 		std::string _user;
 		std::string _realname;
 		std::string _msg_buffer;
-		const size_t		_msg_buffer_max_size;
+		const std::string::size_type	_msg_buffer_max_size;
 		int _authenticated;
 		int _registered;
 		std::map<std::string, Channel *> _channels;

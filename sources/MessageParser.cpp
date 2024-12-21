@@ -522,6 +522,7 @@ std::vector<std::pair<std::string, std::string> > MessageParser::Parse_mode_Para
 void MessageParser::Mode_exec(std::vector<std::string> &msg_tokens, Client *client)
 {
 	std::vector<std::pair<std::string, std::string> > mode_list = Parse_mode_Params(msg_tokens, client);
+	//write a function to print the mode list
 	std::pair<std::string, std::string> mode_changes;
 	if (mode_list.size() < 1)
 		return;
@@ -863,7 +864,6 @@ bool MessageParser::parseCommand(std::stringstream &msg, std::vector<std::string
 void MessageParser::parseBuffer(std::string buff, Client *client)
 {
 	std::stringstream msg_stream(buff);
-
 	parseMessage(msg_stream, client);
 }
 
@@ -877,10 +877,41 @@ bool MessageParser::parseMessage(std::stringstream &msg, Client *client)
 		// print ERR_UNKNOWNERROR (400) -> can specify specific messages
 		return false;
 	}
+
 	// execute command;
+	if (client->getMsgBufferSize() > 0)
+		client->clearMsgBuffer();
 	execute_command(msg_tokens, client);
 	// printVectorWithSpaces(msg_tokens);
 	return true;
+}
+
+void	MessageParser::processMessage(const std::string& msgPart, Client *client) {
+	std::string::size_type	beg, end;
+	std::string				subMsg;
+
+	beg = 0;
+	while ((end = msgPart.find("\r\n", beg)) != msgPart.npos) {
+		end += 2;
+		subMsg = msgPart.substr(beg, end - beg);
+		beg = end;
+		if (client->getMsgBufferSize() > 0) {
+			if ((client->getMsgBufferSize() + subMsg.size()) > client->getBufferMaxSize()) {
+				client->clearMsgBuffer();
+				Server::send(client, ERR_INPUTTOLONG(client->getNick()));
+				continue ;
+			}
+			client->appendToMsgBuffer(subMsg);
+			MessageParser::parseBuffer(client->getMsgBuffer(), client);
+		}
+		else {
+			MessageParser::parseBuffer(subMsg, client);
+		}
+	}
+
+	if ((beg + 1) < (msgPart.size())) {
+		client->appendToMsgBuffer(msgPart.substr(beg, end));
+	}
 }
 
 bool MessageParser::isSpecial(int ch)

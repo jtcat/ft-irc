@@ -286,10 +286,7 @@ void Server::monitorClients()
 						delPollFd();
 					}
 					else
-					{
-						std::cout << "buffer: " << buff << std::endl;
-						_clients[_pfds[_poll_i].fd]->processMessage(buff);
-					}
+						MessageParser::processMessage(buff, _clients[_pfds[_poll_i].fd]);
 				}
 			}
 			_poll_i++;

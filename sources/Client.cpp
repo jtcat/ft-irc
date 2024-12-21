@@ -168,33 +168,22 @@ void Client::broadcastMsg(const std::string &msg, bool broadcastToHimself) const
 	}
 }
 
-void	Client::processMessage(const std::string& msgPart) {
-	std::string::size_type	beg, end;
-	std::string				subMsg;
+void Client::clearMsgBuffer() {
+    _msg_buffer.clear();
+}
 
-	beg = 0;
-	while ((end = msgPart.find("\r\n", beg)) != msgPart.npos) {
-		end += 2;
-		subMsg = msgPart.substr(beg, end - beg);
-		beg = end;
-		std::cout << "Debug: " << subMsg << std::endl;
-		std::cout << "Debug end: " << end << std::endl;
-		if (_msg_buffer.size() > 0) {
-			if ((_msg_buffer.size() + subMsg.size()) > _msg_buffer_max_size) {
-				_msg_buffer.clear();
-				Server::send(this, ERR_INPUTTOLONG(getNick()));
-				continue ;
-			}
-			_msg_buffer.append(subMsg);
-			MessageParser::parseBuffer(_msg_buffer, this);
-			_msg_buffer.clear();
-		}
-		else {
-			MessageParser::parseBuffer(subMsg, this);
-		}
-	}
+void Client::appendToMsgBuffer(const std::string &str) {
+	_msg_buffer.append(str);
+}
 
-	if ((beg + 1) < (msgPart.size())) {
-		_msg_buffer.append(msgPart.substr(beg, end));
-	}
+std::string::size_type Client::getMsgBufferSize() {
+	return _msg_buffer.size();
+}
+
+std::string::size_type Client::getBufferMaxSize() {
+	return _msg_buffer_max_size;
+}
+
+const std::string & Client::getMsgBuffer() {
+	return _msg_buffer;
 }
