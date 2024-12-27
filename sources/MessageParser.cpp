@@ -465,6 +465,10 @@ void MessageParser::Process_Mode_RPL(Client *client, const std::string &channel_
 std::vector<std::pair<std::string, std::string> > MessageParser::Parse_mode_Params(std::vector<std::string> &msg_tokens, Client *client)
 {
 
+	//Multiple modes are only parsed when passed right fater channel without spaces separating
+	//eg: MODE #dav +io+t
+	//The parameters are are put onto a queue starting at msg_tokens position 3 and are checked in order depending
+	//on if a certain mode requires params
 	std::vector<std::pair<std::string, std::string> > mode_list;
 	char ch;
 	char mode = '+';
@@ -509,7 +513,10 @@ std::vector<std::pair<std::string, std::string> > MessageParser::Parse_mode_Para
 				}
 			}
 			else if (ch == 'i' || ch == 't' || ((ch == 'k' || ch == 'l') && mode == '-'))
+			{
 				mode_list.push_back(std::make_pair(mode_str, ""));
+				std::cout <<"mode str: " <<mode_str << std::endl;
+			}
 			else
 			{
 				Server::send(client, ERR_UNKNOWNMODE(client->getNick(), mode_str));
@@ -529,6 +536,7 @@ void MessageParser::Mode_exec(std::vector<std::string> &msg_tokens, Client *clie
 	Channel *channel = _server->getChannel(msg_tokens[1]);
 	for (std::vector<std::pair<std::string, std::string> >::iterator it = mode_list.begin(); it != mode_list.end(); it++)
 	{
+		std::cout << "mode_list : " << it->first << std::endl;
 		if (!channel->isUserOp(client))
 		{
 			Server::send(client, ERR_CHANOPRIVSNEEDED(client->getNick(), channel->getName()));
@@ -889,7 +897,6 @@ void MessageParser::processMessage(const std::string &msgPart, Client *client)
 	std::string::size_type beg, end;
 	std::string subMsg;
 
-	// std::cout << msgPart <<"+";
 	beg = 0;
 	while ((end = msgPart.find("\r\n", beg)) != msgPart.npos)
 	{
@@ -905,7 +912,6 @@ void MessageParser::processMessage(const std::string &msgPart, Client *client)
 				continue;
 			}
 			client->appendToMsgBuffer(subMsg);
-			std::cout << "SubMsg :" << subMsg;
 			MessageParser::parseBuffer(client->getMsgBuffer(), client);
 		}
 		else
