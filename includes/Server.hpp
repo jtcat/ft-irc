@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 
+#include "Compare.hpp"
 #include "Channel.hpp"
 #include "Client.hpp"
 
@@ -64,7 +65,7 @@ class Server {
 		std::vector<struct pollfd> _pfds;
 		std::string _passwd;
 		int _fd_count;
-		std::map<std::string, Channel *> _channels;
+		std::map<std::string, Channel *, ci_less> _channels;
 		std::map<int, Client *> _clients;
-		std::map<std::string, Client *> _client_users;
+		std::map<std::string, Client *, ci_less> _client_users;
 };

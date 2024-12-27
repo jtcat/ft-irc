@@ -56,6 +56,6 @@ class MessageParser
 
 		static bool isSpecial(int ch);
 	private:
-		static std::map<std::string, void (*)(std::vector<std::string> &, Client *)> command_map;
+		static std::map<std::string, void (*)(std::vector<std::string> &, Client *), ci_less> command_map;
 		static Server *_server;
 };
