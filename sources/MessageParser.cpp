@@ -513,10 +513,7 @@ std::vector<std::pair<std::string, std::string> > MessageParser::Parse_mode_Para
 				}
 			}
 			else if (ch == 'i' || ch == 't' || ((ch == 'k' || ch == 'l') && mode == '-'))
-			{
 				mode_list.push_back(std::make_pair(mode_str, ""));
-				std::cout <<"mode str: " <<mode_str << std::endl;
-			}
 			else
 			{
 				Server::send(client, ERR_UNKNOWNMODE(client->getNick(), mode_str));
@@ -536,7 +533,6 @@ void MessageParser::Mode_exec(std::vector<std::string> &msg_tokens, Client *clie
 	Channel *channel = _server->getChannel(msg_tokens[1]);
 	for (std::vector<std::pair<std::string, std::string> >::iterator it = mode_list.begin(); it != mode_list.end(); it++)
 	{
-		std::cout << "mode_list : " << it->first << std::endl;
 		if (!channel->isUserOp(client))
 		{
 			Server::send(client, ERR_CHANOPRIVSNEEDED(client->getNick(), channel->getName()));

@@ -180,8 +180,6 @@ const std::string&	Server::pickRandomQuote(void){
     // Generate a random index between 0 and numQuotes - 1
     int randomIndex = rand() % numQuotes;
 
-	std::cout << "Quote: " << nietzscheQuotes[randomIndex] << std::endl;
-
 	return nietzscheQuotes[randomIndex];
 }
 
