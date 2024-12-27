@@ -89,7 +89,7 @@ int Client::getAuthenticatedFlag() const
 	return _authenticated;
 }
 
-const std::map<std::string, Channel *> &Client::getChannels() const
+const std::map<std::string, Channel *, ci_less> &Client::getChannels() const
 {
 	return _channels;
 }

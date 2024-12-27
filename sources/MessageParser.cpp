@@ -15,7 +15,7 @@
 
 Server *MessageParser::_server = NULL;
 
-std::map<std::string, void (*)(std::vector<std::string> &, Client *)> MessageParser::command_map;
+std::map<std::string, void (*)(std::vector<std::string> &, Client *), ci_less> MessageParser::command_map;
 
 void MessageParser::setServer(Server *server)
 {
@@ -732,7 +732,7 @@ void MessageParser::Ping_exec(std::vector<std::string> &msg_tokens, Client *clie
 
 void MessageParser::processUnregisteredClient(std::vector<std::string> &msg_tokens, Client *client)
 {
-	std::map<std::string, void (*)(std::vector<std::string> &, Client *)>::iterator it = command_map.find(msg_tokens[0]);
+	std::map<std::string, void (*)(std::vector<std::string> &, Client *), ci_less>::iterator it = command_map.find(msg_tokens[0]);
 
 	if (it != command_map.end()) // valid command but no registry -> ERR_NOTREGISTEREED
 	{
@@ -748,7 +748,7 @@ void MessageParser::execute_command(std::vector<std::string> &msg_tokens, Client
 {
 	if (msg_tokens.size() == 0)
 		return;
-	std::map<std::string, void (*)(std::vector<std::string> &, Client *)>::iterator it = command_map.find(msg_tokens[0]);
+	std::map<std::string, void (*)(std::vector<std::string> &, Client *), ci_less>::iterator it = command_map.find(msg_tokens[0]);
 	if (command_map.empty())
 	{
 		command_map["PASS"] = &MessageParser::Pass_exec;

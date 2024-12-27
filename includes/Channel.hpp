@@ -6,6 +6,7 @@
 #include <ctime>
 
 class Client;
+#include "Compare.hpp"
 #include "Client.hpp"
 
 class Channel

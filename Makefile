@@ -18,7 +18,7 @@ VPATH = $(SRCSD) $(addprefix $(SRCSD), $(SUBSD))
 # files
 NAME = ircserv
 FILES =  main
-FILES += Server MessageParser Client Channel
+FILES += Server MessageParser Client Channel Compare
 OBJS = $(FILES:%=%.o)
 TARGET = $(addprefix $(OBJSD), $(OBJS))
 

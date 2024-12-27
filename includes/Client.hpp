@@ -5,6 +5,7 @@
 #include <map>
 
 class Channel;
+#include "Compare.hpp"
 #include "MessageParser.hpp"
 #include "Channel.hpp"
 
@@ -34,7 +35,7 @@ class Client {
 		void setUser(const std::string &username);
 		void setNick(const std::string &nick);
 		void setRealname(const std::string &realname);
-		const std::map<std::string, Channel *> &getChannels() const;
+		const std::map<std::string, Channel *, ci_less> &getChannels() const;
 		void addChannel(Channel *channel);
 		bool isUserOnChannel(const std::string &channel) const;
 		void broadcastMsg(const std::string &msg, bool broadcastToHimself) const;
@@ -58,5 +59,5 @@ class Client {
 		const std::string::size_type	_msg_buffer_max_size;
 		int _authenticated;
 		int _registered;
-		std::map<std::string, Channel *> _channels;
+		std::map<std::string, Channel *, ci_less> _channels;
 };
