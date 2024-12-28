@@ -241,10 +241,12 @@ void Channel::broadcastTopicMsg(Client *client) {
 
 void Channel::setTopic(Client *client, const std::string& new_topic) {
 	time_t	t = std::time(NULL);
+	std::stringstream	ss;
 
 	_topic = new_topic;
 	_topic_set_client = client;
-	_topic_set_date = ctime(&t);
+	ss << t;
+	_topic_set_date = ss.str();
 
 	broadcastTopicMsg(client);
 }
