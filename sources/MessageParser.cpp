@@ -421,7 +421,7 @@ void MessageParser::Topic_exec(std::vector<std::string> &msg_tokens, Client *cli
 				else
 				{
 					it_channel->second->sendTopicMsg(client);
-					it_channel->second->sendTopicWhoMsg(client);
+					//it_channel->second->sendTopicWhoMsg(client);
 				}
 			}
 			else
