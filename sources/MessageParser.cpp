@@ -810,7 +810,7 @@ bool MessageParser::parseParams(std::stringstream &msg, std::vector<std::string>
 		if (ch == '\r' && msg.peek() == '\n')
 		{
 			msg.get(); // get \n;
-			if (ss.str().length() > 0)
+			if (ss.str().length() > 0 || include_space)
 				msg_tokens.push_back(ss.str());
 			return true;
 		}
