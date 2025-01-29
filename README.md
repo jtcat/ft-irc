@@ -1,5 +1,5 @@
 # FT-Irc - A simple IRC server
-A zero dependency IRC server written in C++. Can handle quite a few clients connected to it.
+A zero dependency IRC server written in C++. Can handle quite a few thousand clients connected to it.
 # Features
 - Direct messages between users
 - Channel operators
